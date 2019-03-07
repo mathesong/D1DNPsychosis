@@ -1,0 +1,3853 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>TAC Analysis</title>
+
+<script src="TAC_analysis_anon_files/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="TAC_analysis_anon_files/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="TAC_analysis_anon_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="TAC_analysis_anon_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="TAC_analysis_anon_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="TAC_analysis_anon_files/navigation-1.1/tabsets.js"></script>
+<link href="TAC_analysis_anon_files/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="TAC_analysis_anon_files/highlightjs-9.12.0/highlight.js"></script>
+<link href="TAC_analysis_anon_files/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="TAC_analysis_anon_files/pagedtable-1.1/js/pagedtable.js"></script>
+<script src="TAC_analysis_anon_files/kePrint-0.0.1/kePrint.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">TAC Analysis</h1>
+
+</div>
+
+<div id="TOC">
+yes
+</div>
+
+<div id="aims" class="section level1">
+<h1>Aims</h1>
+<p>In this analysis, we aim to analyse the TAC data from the D1 schizophrenia control study.</p>
+<p>The relevant issues which need to be confronted prior to analysis are:</p>
+<ul>
+<li>Different lengths of the PET measurements</li>
+<li>Different lengths of PET frames</li>
+</ul>
+<p>The relevant concerns which need to be addressed during the analysis phase are:</p>
+<ul>
+<li>Time-stability of D1R BP<sub>ND</sub> estimates</li>
+<li>Relevance of T1 and T2 MR measurements</li>
+<li>Relevance of having the neuroinsert</li>
+<li>Relevance of automatic and manual ROIs</li>
+</ul>
+</div>
+<div id="munging-tacs" class="section level1">
+<h1>Munging TACs</h1>
+<div id="libraries" class="section level2">
+<h2>Libraries</h2>
+<pre class="r"><code># devtools::install_github(&#39;mathesong/kipettools&#39;)
+# devtools::install_github(&quot;mathesong/kinfitr&quot;, ref=&quot;v0.2.0&quot;)
+library(kipettools)
+library(tidyverse)</code></pre>
+<pre><code>## -- Attaching packages ------------------------------------------------------------------------------------ tidyverse 1.2.1 --</code></pre>
+<pre><code>## v ggplot2 3.1.0       v purrr   0.3.0  
+## v tibble  2.0.1       v dplyr   0.8.0.1
+## v tidyr   0.8.2       v stringr 1.4.0  
+## v readr   1.3.1       v forcats 0.4.0</code></pre>
+<pre><code>## Warning: package &#39;ggplot2&#39; was built under R version 3.5.2</code></pre>
+<pre><code>## Warning: package &#39;tibble&#39; was built under R version 3.5.2</code></pre>
+<pre><code>## Warning: package &#39;tidyr&#39; was built under R version 3.5.1</code></pre>
+<pre><code>## Warning: package &#39;readr&#39; was built under R version 3.5.2</code></pre>
+<pre><code>## Warning: package &#39;purrr&#39; was built under R version 3.5.2</code></pre>
+<pre><code>## Warning: package &#39;dplyr&#39; was built under R version 3.5.2</code></pre>
+<pre><code>## Warning: package &#39;stringr&#39; was built under R version 3.5.2</code></pre>
+<pre><code>## Warning: package &#39;forcats&#39; was built under R version 3.5.2</code></pre>
+<pre><code>## -- Conflicts --------------------------------------------------------------------------------------- tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(kinfitr)
+library(viridis)</code></pre>
+<pre><code>## Loading required package: viridisLite</code></pre>
+<pre class="r"><code>library(knitr)
+library(readxl)</code></pre>
+<pre><code>## Warning: package &#39;readxl&#39; was built under R version 3.5.1</code></pre>
+<pre class="r"><code>library(broom)</code></pre>
+<pre><code>## Warning: package &#39;broom&#39; was built under R version 3.5.2</code></pre>
+<pre class="r"><code>library(lubridate)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;lubridate&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:base&#39;:
+## 
+##     date</code></pre>
+<pre class="r"><code>library(corrplot)</code></pre>
+<pre><code>## corrplot 0.84 loaded</code></pre>
+<pre class="r"><code>library(stringr)
+library(ggbeeswarm)
+library(R2jags)</code></pre>
+<pre><code>## Loading required package: rjags</code></pre>
+<pre><code>## Loading required package: coda</code></pre>
+<pre><code>## Linked to JAGS 4.2.0</code></pre>
+<pre><code>## Loaded modules: basemod,bugs</code></pre>
+<pre><code>## 
+## Attaching package: &#39;R2jags&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:coda&#39;:
+## 
+##     traceplot</code></pre>
+<pre class="r"><code>library(polspline)
+library(TOSTER)
+library(compute.es)
+
+source(&quot;residuals_for.R&quot;)</code></pre>
+<p>We also use a script from StackOverflow</p>
+<pre class="r"><code># From https://stackoverflow.com/questions/35717353/split-violin-plot-with-ggplot2
+
+GeomSplitViolin &lt;- ggproto(&quot;GeomSplitViolin&quot;, GeomViolin, draw_group = function(self, data, ..., draw_quantiles = NULL){
+  data &lt;- transform(data, xminv = x - violinwidth * (x - xmin), xmaxv = x + violinwidth * (xmax - x))
+  grp &lt;- data[1,&#39;group&#39;]
+  newdata &lt;- plyr::arrange(transform(data, x = if(grp%%2==1) xminv else xmaxv), if(grp%%2==1) y else -y)
+  newdata &lt;- rbind(newdata[1, ], newdata, newdata[nrow(newdata), ], newdata[1, ])
+  newdata[c(1,nrow(newdata)-1,nrow(newdata)), &#39;x&#39;] &lt;- round(newdata[1, &#39;x&#39;]) 
+  if (length(draw_quantiles) &gt; 0 &amp; !scales::zero_range(range(data$y))) {
+    stopifnot(all(draw_quantiles &gt;= 0), all(draw_quantiles &lt;= 
+                                              1))
+    quantiles &lt;- ggplot2:::create_quantile_segment_frame(data, draw_quantiles)
+    aesthetics &lt;- data[rep(1, nrow(quantiles)), setdiff(names(data), c(&quot;x&quot;, &quot;y&quot;)), drop = FALSE]
+    aesthetics$alpha &lt;- rep(1, nrow(quantiles))
+    both &lt;- cbind(quantiles, aesthetics)
+    quantile_grob &lt;- GeomPath$draw_panel(both, ...)
+    ggplot2:::ggname(&quot;geom_split_violin&quot;, grid::grobTree(GeomPolygon$draw_panel(newdata, ...), quantile_grob))
+  }
+  else {
+    ggplot2:::ggname(&quot;geom_split_violin&quot;, GeomPolygon$draw_panel(newdata, ...))
+  }
+})
+
+geom_split_violin &lt;- function (mapping = NULL, data = NULL, stat = &quot;ydensity&quot;, position = &quot;identity&quot;, ..., draw_quantiles = NULL, trim = TRUE, scale = &quot;area&quot;, na.rm = FALSE, show.legend = NA, inherit.aes = TRUE) {
+  layer(data = data, mapping = mapping, stat = stat, geom = GeomSplitViolin, position = position, show.legend = show.legend, inherit.aes = inherit.aes, params = list(trim = trim, scale = scale, draw_quantiles = draw_quantiles, na.rm = na.rm, ...))
+}</code></pre>
+</div>
+<div id="data" class="section level2">
+<h2>Data</h2>
+<pre class="r"><code>kfresults_files &lt;- list.files(path = &#39;RawData/&#39;, pattern = &#39;kinfitresults.mat&#39;)
+kfresults_paths &lt;- list.files(path = &#39;RawData/&#39;, pattern = &#39;kinfitresults.mat&#39;, full.names = T)
+
+alldata &lt;- tibble(file = kfresults_files, path = kfresults_paths) %&gt;% 
+  group_by(path) %&gt;% 
+  mutate(tacdata = map(path, ~kipettools::kfresults_getData(.x)))
+
+saveRDS(alldata, file = &#39;IntermediateData/alltacdata.rds&#39;)</code></pre>
+</div>
+<div id="extract-from-that-data" class="section level2">
+<h2>Extract from that data</h2>
+<pre class="r"><code>alldata &lt;- readRDS(&#39;IntermediateData/alltacdata.rds&#39;)
+
+alldata &lt;- alldata %&gt;% 
+  mutate(Subjname = map_chr(tacdata, &#39;Subjname&#39;),
+         PETNo = map_dbl(tacdata, &#39;PETNo&#39;),
+         alltacs = map(tacdata, &#39;tacdata&#39;),
+         roisizes = map(tacdata, &#39;roisizes&#39;)) %&gt;% 
+  select(-tacdata)</code></pre>
+<pre><code>## Warning: Detecting old grouped_df format, replacing `vars` attribute by
+## `groups`</code></pre>
+<p>Now I’ve extracted all the elements into their own nested columns. We now wish to create weighted averages of the striatal ROIs to create a whole striatum ROI.</p>
+<p>First I’ll define functions for extracting weighted averages, and for doing this for both of the ROIs that we want</p>
+<pre class="r"><code># Generic combination
+
+combine_tacs &lt;- function(alltacs, roisizes, roinames) {
+  roinames &lt;- roinames[order(roinames)]
+  alltacs &lt;- select(alltacs, roinames)
+  roisizes &lt;- filter(roisizes, ROI %in% roinames) %&gt;% 
+    arrange(ROI) %&gt;% 
+    mutate(ROI=as.character(ROI))
+  
+  all_long &lt;- alltacs %&gt;% 
+    mutate(frameNo = 1:n()) %&gt;% 
+    gather(key = &#39;ROI&#39;, value = &#39;Radioactivity&#39;, -frameNo) %&gt;% 
+    full_join(roisizes, by = &#39;ROI&#39;) %&gt;% 
+    mutate(weighted_val = Radioactivity * Volume) %&gt;% 
+    group_by(frameNo) %&gt;% 
+    summarise(outtac = sum(weighted_val) / sum(roisizes$Volume) )
+  
+  pull(all_long, outtac)
+
+}
+
+
+# Specific computation
+
+getROIs &lt;- function(alltacs, roisizes) {
+  outdf &lt;- select(alltacs, times, weights) %&gt;% 
+    mutate(STR = combine_tacs(alltacs, roisizes, c(&#39;CAU&#39;, &#39;PUT&#39;, &#39;VST&#39;) ),
+           DLPFC = combine_tacs(alltacs, roisizes, c(&#39;gmDLPF&#39;)),
+           CBL = combine_tacs(alltacs, roisizes, c(&#39;CER&#39;)) )
+  return(outdf)
+}
+
+# modeldata &lt;- alldata %&gt;% 
+#   mutate(finaltacs = map2(alltacs, roisizes, ~getROIs(.x, .y)))</code></pre>
+<p>So this last call doesn’t work, because the DLPFC is sometimes called DLPF and sometimes DLPC. Let’s just fix this.</p>
+<pre class="r"><code>for( i in 1:nrow(alldata)) {
+  
+  # roisizes
+  alldata$roisizes[[i]]$ROI &lt;- as.character(alldata$roisizes[[i]]$ROI)
+  
+  alldata$roisizes[[i]]$ROI[alldata$roisizes[[i]]$ROI==&#39;gmDLPC&#39;] = &#39;gmDLPFC&#39;
+  alldata$roisizes[[i]]$ROI[alldata$roisizes[[i]]$ROI==&#39;gmDLPF&#39;] = &#39;gmDLPFC&#39;
+  
+  
+  # tacdata
+  names(alldata$alltacs[[i]])[names(alldata$alltacs[[i]])==&#39;gmDLPC&#39;] = &#39;gmDLPFC&#39;
+  names(alldata$alltacs[[i]])[names(alldata$alltacs[[i]])==&#39;gmDLPF&#39;] = &#39;gmDLPFC&#39;
+  
+}</code></pre>
+<p>Ok, now let’s fix up that last function</p>
+<pre class="r"><code>getROIs &lt;- function(alltacs, roisizes) {
+  outdf &lt;- select(alltacs, times, weights, durations) %&gt;% 
+    mutate(STR = combine_tacs(alltacs, roisizes, c(&#39;CAU&#39;, &#39;PUT&#39;, &#39;VST&#39;) ),
+           DLPFC = combine_tacs(alltacs, roisizes, c(&#39;gmDLPFC&#39;)),  # Now using DLPFC
+           CBL = combine_tacs(alltacs, roisizes, c(&#39;CER&#39;)),
+           fslSTR = combine_tacs(alltacs, roisizes, c(&#39;fslSTR&#39;)),
+           fslDLPFC = combine_tacs(alltacs, roisizes, c(&#39;fslMFG&#39;)),
+           fslCBL = combine_tacs(alltacs, roisizes, c(&#39;RefCBL&#39;)) )
+  return(outdf)
+}
+
+modeldata &lt;- alldata %&gt;%
+  mutate(finaltacs = map2(alltacs, roisizes, ~getROIs(.x, .y))) %&gt;% 
+  select(path, Subjname, PETNo, tacs = finaltacs) %&gt;% 
+  mutate(Subjname = stringr::str_replace(Subjname, &#39;D1-schiz_&#39;, &#39;&#39;))</code></pre>
+</div>
+<div id="removing-frames-without-participants" class="section level2">
+<h2>Removing frames without participants</h2>
+<p>Two participants left the camera early. However, the frames after they’d left are still included. Let’s remove these.</p>
+<pre class="r"><code>modeldata_unnested &lt;- unnest(modeldata) %&gt;% 
+  group_by(path) %&gt;% 
+  mutate(cumTime = cumsum(durations),
+         startTime = times - (durations/2))
+
+# This code below is hardcoded to remove the acronyms from the shared code
+subj1_out &lt;- 41:43
+subj2_out &lt;- 387:389
+
+modeldata_unnested &lt;- modeldata_unnested[-c(subj1_out, subj2_out),]
+
+modeldata &lt;- modeldata_unnested %&gt;% 
+  select(-cumTime, -startTime) %&gt;% 
+  group_by(path, Subjname, PETNo) %&gt;% 
+  nest(.key = &#39;tacs&#39;)</code></pre>
+<p>Now let’s just split this up into separate data frames for all ROIs and only manual ROIs so that we don’t always have to filter out the automated ROIs.</p>
+<pre class="r"><code>modeldata_manauto &lt;- modeldata
+
+modeldata &lt;- unnest(modeldata) %&gt;% 
+  select(-starts_with(&#39;fsl&#39;)) %&gt;% 
+  group_by(path, Subjname, PETNo) %&gt;% 
+  nest(.key = &#39;tacs&#39;)</code></pre>
+
+</div>
+</div>
+<div id="exploring-the-frame-properties-of-the-tacs" class="section level1">
+<h1>Exploring the Frame Properties of the TACs</h1>
+<pre class="r"><code>modeldata &lt;- modeldata %&gt;% 
+  mutate(measLength = map_dbl(tacs, ~sum(.$durations)),
+         frames = map_dbl(tacs, ~nrow(.x)-1) )
+
+kable(table(round(modeldata$measLength)), col.names = c(&quot;Measurement Length&quot;, &quot;Frequency&quot;))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Measurement Length</th>
+<th align="right">Frequency</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">33</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="left">39</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">51</td>
+<td align="right">23</td>
+</tr>
+<tr class="even">
+<td align="left">63</td>
+<td align="right">9</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>ggplot(modeldata, aes(x=measLength)) +
+  geom_histogram(colour=&#39;black&#39;, fill=&#39;blue&#39;) +
+  theme_bw() +
+  labs(x=&#39;PET Length (minutes)&#39;,
+       y=&#39;Counts&#39;,
+       title=&#39;Lengths of PET Measurements&#39;) +
+  xlim(c(30, 70))</code></pre>
+<pre><code>## Warning: Removed 2 rows containing missing values (geom_bar).</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/frameprops-1.png" width="3000" /></p>
+<pre class="r"><code>ggplot(modeldata, aes(x=frames)) +
+  geom_histogram(colour=&#39;black&#39;, fill=&#39;blue&#39;) +
+  theme_bw() +
+  labs(x=&#39;Number of Frames in each PET Measurement&#39;,
+       y=&#39;Counts&#39;,
+       title=&#39;Frames&#39;) + 
+  xlim(c(10, 26))</code></pre>
+<pre><code>## Warning: Removed 2 rows containing missing values (geom_bar).</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/frameprops-2.png" width="3000" /></p>
+<pre class="r"><code>frameData &lt;- modeldata %&gt;% 
+  unnest() %&gt;% 
+  mutate(endTime = times + durations/2)
+
+ggplot(frameData, aes(x=endTime)) +
+  geom_histogram(colour=&#39;black&#39;, fill=&#39;blue&#39;, bins = 40) +
+  theme_bw() +
+  labs(x=&#39;Minutes&#39;,
+       y=&#39;Counts&#39;,
+       title=&#39;Minutes 0:5: When does each frame end?&#39;) +
+  xlim(c(-1,5))</code></pre>
+<pre><code>## Warning: Removed 408 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>## Warning: Removed 1 rows containing missing values (geom_bar).</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/frameprops-3.png" width="3000" /></p>
+<pre class="r"><code>ggplot(frameData, aes(x=endTime)) +
+  geom_histogram(colour=&#39;black&#39;, fill=&#39;blue&#39;, bins = 100) +
+  theme_bw() +
+  labs(x=&#39;Minutes&#39;,
+       y=&#39;Counts&#39;,
+       title=&#39;Minutes 5:end: When does each frame end?&#39;) +
+  xlim(c(5, 70))</code></pre>
+<pre><code>## Warning: Removed 236 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>## Warning: Removed 2 rows containing missing values (geom_bar).</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/frameprops-4.png" width="3000" /></p>
+</div>
+<div id="are-the-different-tac-lengths-a-problem-time-stability-analysis" class="section level1">
+<h1>Are the different TAC lengths a problem? Time Stability analysis</h1>
+<div id="long-measurements" class="section level2">
+<h2>Long measurements</h2>
+<p>Let’s first look at only the longest measurements</p>
+<pre class="r"><code>longmeasurements &lt;- modeldata %&gt;% 
+  filter(measLength &gt; 60)
+
+
+
+time_stability &lt;- function(tacs, roiname, minlength) {
+  tacs$cumtime &lt;- cumsum(tacs$durations)
+
+  out &lt;- tibble(PETlength = tacs$cumtime) %&gt;% 
+    mutate(frameNo = 1:n()) %&gt;% 
+    filter(PETlength &gt; minlength) %&gt;% 
+    group_by(frameNo) %&gt;% 
+    mutate(bp = map_dbl(frameNo,
+                        ~srtm(t_tac = tacs$times,
+                              reftac = tacs$CBL, 
+                              roitac = tacs[[roiname]], 
+                              weights = tacs$weights,
+                              frameStartEnd = c(1,.x))$par$bp, tacs=tacs)) %&gt;% 
+    ungroup() %&gt;% 
+    select(-frameNo) %&gt;% 
+    mutate(ROI = roiname)
+  
+  return(out)
+}
+
+ts_data &lt;- longmeasurements %&gt;% 
+  group_by(path) %&gt;% 
+  mutate(str_ts = map(tacs, ~time_stability(.x, &#39;STR&#39;, 20))) %&gt;% 
+  mutate(dlpfc_ts = map(tacs, ~time_stability(.x, &#39;DLPFC&#39;, 20))) %&gt;% 
+  mutate(all_ts = map2(str_ts, dlpfc_ts, ~rbind(.x, .y))) %&gt;% 
+  select(-str_ts, -dlpfc_ts, -tacs) %&gt;% 
+  unnest() %&gt;% 
+  ungroup()
+
+totbp &lt;- ts_data %&gt;% 
+  filter( round(PETlength) == 63) %&gt;% 
+  rename(totbp = bp) %&gt;% 
+  select(-PETlength)
+
+midbp &lt;- ts_data %&gt;% 
+  filter( round(PETlength) == 51) %&gt;% 
+  rename(midbp = bp) %&gt;% 
+  select(-PETlength)
+
+ts_analysis &lt;- full_join(ts_data, totbp) %&gt;% 
+  full_join(midbp) %&gt;% 
+  mutate(totperc_bp = bp/totbp,
+         midperc_bp = bp/midbp)</code></pre>
+<pre><code>## Joining, by = c(&quot;path&quot;, &quot;Subjname&quot;, &quot;PETNo&quot;, &quot;measLength&quot;, &quot;frames&quot;, &quot;ROI&quot;)
+## Joining, by = c(&quot;path&quot;, &quot;Subjname&quot;, &quot;PETNo&quot;, &quot;measLength&quot;, &quot;frames&quot;, &quot;ROI&quot;)</code></pre>
+<p>And let’s plot that</p>
+<pre class="r"><code>ggplot(ts_analysis, aes(x=PETlength, y=totperc_bp, colour=Subjname)) +
+  geom_point() +
+  geom_line() +
+  theme_bw() +
+  geom_hline(yintercept=1, linetype=&quot;dashed&quot;) +
+  labs(x = &#39;Measurement Length (minutes)&#39;,
+       y = expression(paste(&quot;Proportional &quot;, BP[ND], sep = &quot;&quot;)),
+       title=&#39;Time Stability Analysis relative to 63 minutes&#39;) +
+  facet_grid(ROI~., scales=&quot;free_y&quot;) +
+  guides(colour=FALSE, fill=FALSE) +
+  coord_cartesian(ylim = c(0.8, 1.4))</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/longmeasuresplot-1.png" width="4800" /></p>
+<pre class="r"><code>ggplot(ts_analysis, aes(x=PETlength, y=midperc_bp, colour=Subjname)) +
+  geom_point() +
+  geom_line() +
+  theme_bw() +
+  geom_hline(yintercept=1, linetype=&quot;dashed&quot;) +
+  labs(x = &#39;Measurement Length (minutes)&#39;,
+       y = expression(paste(&quot;Proportional &quot;, BP[ND], sep = &quot;&quot;)),
+       title=&#39;Time Stability Analysis relative to 51 minutes&#39;) +
+  facet_grid(ROI~.) +
+  guides(colour=FALSE, fill=FALSE) +
+  coord_cartesian(ylim = c(0.8, 1.4))</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/longmeasuresplot-2.png" width="4800" /></p>
+<p>Conclusions here:</p>
+<ul>
+<li>SCH23390 is <em>not</em> time-stable</li>
+<li>If we use the full length, we will be biased for many measures which were not so long</li>
+<li>We have at least 51 minutes of acquisition for all individuals except one</li>
+<li>We also have a time frame which ends at 51 minutes for all individuals except one</li>
+<li>The only individual with the short acquisition has 33 minutes
+<ul>
+<li>This is associated with a bias of around about +5%</li>
+</ul></li>
+<li>Losing an additional participant is probably worse. Let’s instead model the average change and use that for the BP<sub>ND</sub> value.</li>
+</ul>
+</div>
+<div id="minute-data" class="section level2">
+<h2>51 Minute Data</h2>
+<p>Now we use all the data for which we have a full 51 minutes</p>
+<pre class="r"><code>midmeasurements &lt;- modeldata %&gt;% 
+  filter(measLength &gt; 50)
+
+ts_data_mid &lt;- midmeasurements %&gt;% 
+  group_by(path) %&gt;% 
+  mutate(str_ts = map(tacs, ~time_stability(.x, &#39;STR&#39;, 25))) %&gt;% 
+  mutate(dlpfc_ts = map(tacs, ~time_stability(.x, &#39;DLPFC&#39;, 25))) %&gt;% 
+  mutate(all_ts = map2(str_ts, dlpfc_ts, ~rbind(.x, .y))) %&gt;% 
+  select(-str_ts, -dlpfc_ts, -tacs) %&gt;% 
+  unnest() %&gt;% 
+  ungroup()
+
+
+midbp &lt;- ts_data_mid %&gt;% 
+  filter( round(PETlength) == 51) %&gt;% 
+  rename(midbp = bp) %&gt;% 
+  select(-PETlength)
+
+ts_analysis_mid &lt;- full_join(ts_data_mid, midbp) %&gt;% 
+  mutate(midperc_bp = bp/midbp) %&gt;% 
+  filter( PETlength &lt; 52)</code></pre>
+<pre><code>## Joining, by = c(&quot;path&quot;, &quot;Subjname&quot;, &quot;PETNo&quot;, &quot;measLength&quot;, &quot;frames&quot;, &quot;ROI&quot;)</code></pre>
+<p>And let’s plot that</p>
+<pre class="r"><code>tsplot &lt;- ggplot(ts_analysis_mid, aes(x=PETlength, y=midperc_bp)) +
+  geom_point(aes(colour=Subjname)) +
+  geom_line(aes(colour=Subjname)) +
+  theme_bw() +
+  geom_hline(yintercept=1, linetype=&quot;dashed&quot;) +
+  labs(x = &#39;Measurement Length (minutes)&#39;,
+       y = expression(paste(&quot;Proportional &quot;, BP[ND], sep = &quot;&quot;)),
+       title=&#39;Time Stability Analysis relative to 51 minutes&#39;) +
+  facet_grid(ROI~.) +
+  guides(colour=FALSE, fill=FALSE) +
+  coord_cartesian(ylim = c(0.8, 1.4))
+
+tsplot</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/shortmermeasuresplot-1.png" width="4800" /></p>
+<pre class="r"><code>ggsave(filename = &quot;Figures/tsplot.jpg&quot;, tsplot)</code></pre>
+<pre><code>## Saving 8 x 8 in image</code></pre>
+<p>And summary statistics</p>
+<pre class="r"><code>ts_analysis_mid_summary &lt;- ts_analysis_mid %&gt;%
+  mutate(PETlength = round(PETlength)) %&gt;% 
+  group_by(PETlength, ROI) %&gt;% 
+  summarise(mean_percdif = mean(midperc_bp),
+            sd_percdif = sd(midperc_bp),
+            mean_bp = mean(bp),
+            sd_bp = sd(bp),
+            n = n()) %&gt;% 
+  filter(n == 32) %&gt;% 
+  arrange(ROI, PETlength)
+
+knitr::kable(ts_analysis_mid_summary, digits=3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">PETlength</th>
+<th align="left">ROI</th>
+<th align="right">mean_percdif</th>
+<th align="right">sd_percdif</th>
+<th align="right">mean_bp</th>
+<th align="right">sd_bp</th>
+<th align="right">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">27</td>
+<td align="left">DLPFC</td>
+<td align="right">1.078</td>
+<td align="right">0.115</td>
+<td align="right">0.334</td>
+<td align="right">0.087</td>
+<td align="right">32</td>
+</tr>
+<tr class="even">
+<td align="right">33</td>
+<td align="left">DLPFC</td>
+<td align="right">1.035</td>
+<td align="right">0.051</td>
+<td align="right">0.320</td>
+<td align="right">0.079</td>
+<td align="right">32</td>
+</tr>
+<tr class="odd">
+<td align="right">39</td>
+<td align="left">DLPFC</td>
+<td align="right">1.024</td>
+<td align="right">0.030</td>
+<td align="right">0.317</td>
+<td align="right">0.079</td>
+<td align="right">32</td>
+</tr>
+<tr class="even">
+<td align="right">45</td>
+<td align="left">DLPFC</td>
+<td align="right">1.011</td>
+<td align="right">0.022</td>
+<td align="right">0.313</td>
+<td align="right">0.078</td>
+<td align="right">32</td>
+</tr>
+<tr class="odd">
+<td align="right">51</td>
+<td align="left">DLPFC</td>
+<td align="right">1.000</td>
+<td align="right">0.000</td>
+<td align="right">0.309</td>
+<td align="right">0.076</td>
+<td align="right">32</td>
+</tr>
+<tr class="even">
+<td align="right">27</td>
+<td align="left">STR</td>
+<td align="right">1.087</td>
+<td align="right">0.101</td>
+<td align="right">1.715</td>
+<td align="right">0.267</td>
+<td align="right">32</td>
+</tr>
+<tr class="odd">
+<td align="right">33</td>
+<td align="left">STR</td>
+<td align="right">1.052</td>
+<td align="right">0.078</td>
+<td align="right">1.661</td>
+<td align="right">0.251</td>
+<td align="right">32</td>
+</tr>
+<tr class="even">
+<td align="right">39</td>
+<td align="left">STR</td>
+<td align="right">1.035</td>
+<td align="right">0.037</td>
+<td align="right">1.635</td>
+<td align="right">0.241</td>
+<td align="right">32</td>
+</tr>
+<tr class="odd">
+<td align="right">45</td>
+<td align="left">STR</td>
+<td align="right">1.019</td>
+<td align="right">0.017</td>
+<td align="right">1.611</td>
+<td align="right">0.236</td>
+<td align="right">32</td>
+</tr>
+<tr class="even">
+<td align="right">51</td>
+<td align="left">STR</td>
+<td align="right">1.000</td>
+<td align="right">0.000</td>
+<td align="right">1.582</td>
+<td align="right">0.233</td>
+<td align="right">32</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="variance-across-time-ranges" class="section level2">
+<h2>Variance across time ranges</h2>
+<p>We have shown that there is bias across the time range relative to both 51 and 63 minutes. We can either correct the estimated bias in the BP<sub>ND</sub> of shorter PET measurements, or else we could possibly just restrict analysis of all PET meausurements to shorter periods. To assess the feasibility of this decision, we can examine the standard deviation of BP<sub>ND</sub> values across time.</p>
+<pre class="r"><code>ts_analysis_mid %&gt;% 
+  arrange(PETlength) %&gt;% 
+  mutate(PETlength = round(PETlength)) %&gt;% 
+  filter(PETlength != 30) %&gt;%    # From above, we see that there are fewer PET measurements with 30 minute ends
+  ggplot(aes(x=PETlength, y=bp)) +
+  geom_point(aes(colour=PETlength)) +
+  geom_violin(aes(x=PETlength, group=factor(PETlength), colour=PETlength, fill=PETlength), 
+              width=2, alpha=0.25) +
+  facet_grid(ROI ~ ., scale=&#39;free_y&#39;) +
+  scale_colour_viridis(option = &#39;B&#39;) +
+  scale_fill_viridis(option = &#39;B&#39;)</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/varianceviolin-1.png" width="4200" /></p>
+<p>This is not so clear. We can instead plot the SD across the range directly.</p>
+<pre class="r"><code>ts_analysis_mid_summary %&gt;% 
+  filter(PETlength != 30) %&gt;%    # From above, we see that there are fewer PET measurements with 30 minute ends
+  ggplot(aes(x=PETlength, y=sd_bp)) +
+  geom_point() +
+  geom_line() +
+  facet_grid(ROI ~ ., scale=&#39;free_y&#39;) +
+  theme_bw()</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/varianceline-1.png" width="4200" /></p>
+<p>We therefore conclude that longer measurements are preferable as they show diminished variability. The best solution is therefore to correct the shorter measurements for potential bias to what they <em>might</em> have been if they had been measured for the whole 51 minutes.</p>
+
+</div>
+</div>
+<div id="binding-potential-analysis" class="section level1">
+<h1>Binding potential analysis</h1>
+<div id="preparing-the-long-data" class="section level2">
+<h2>Preparing the long data</h2>
+<pre class="r"><code>modeldata_long &lt;- unnest(modeldata) %&gt;% 
+  ungroup(modeldata) %&gt;% 
+  mutate(frameEnd = times+durations/2) %&gt;% 
+  filter(frameEnd &lt; 52) %&gt;% 
+  gather(key = &#39;ROI&#39;, value = &#39;Radioactivity&#39;, -path, -Subjname, 
+         -PETNo, -measLength, -frames, -times, -CBL,
+         -weights, -durations, -frameEnd) %&gt;% 
+  arrange(Subjname, PETNo, times) %&gt;% 
+  group_by(path, Subjname, PETNo, measLength, frames, ROI) %&gt;% 
+  nest(.key = &#39;tacs&#39;)</code></pre>
+</div>
+<div id="calculating-bpnd-values" class="section level2">
+<h2>Calculating BP<sub>ND</sub> values</h2>
+<pre class="r"><code>modeldata_long &lt;- modeldata_long %&gt;% 
+  group_by(path) %&gt;% 
+  mutate(srtmout = map(tacs, ~srtm(t_tac = .x$times,
+                              reftac = .x$CBL, 
+                              roitac = .x$Radioactivity, 
+                              weights = .x$weights)),
+         srtm_bp = map_dbl(srtmout, c(&#39;par&#39;, &#39;bp&#39;)))</code></pre>
+<p>and checking for outliers</p>
+<pre class="r"><code>ggplot(modeldata_long, aes(x=srtm_bp)) +
+  geom_histogram(colour=&#39;black&#39;, fill=&#39;blue&#39;, bins = 20) +
+  geom_density(colour=&quot;red&quot;, size=2) +
+  facet_grid(.~ROI, scale=&#39;free_x&#39;)</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/bp_outliercheck-1.png" width="4200" /></p>
+<p>These look pretty good, and the distributions look approximately normal.</p>
+<p>Let’s plot the highest and lowest BP<sub>ND</sub> value TACs to see that they look ok.</p>
+<pre class="r"><code>hilo_dat &lt;- modeldata_long %&gt;% 
+  ungroup() %&gt;% 
+  group_by(ROI) %&gt;% 
+  filter(srtm_bp == max(srtm_bp) | srtm_bp == min(srtm_bp)) %&gt;% 
+  ungroup() %&gt;% 
+  arrange(srtm_bp)
+
+hilo_fits &lt;- map2(hilo_dat$srtmout, hilo_dat$ROI, 
+                    ~plot_kinfit(.x, roiname=.y))
+
+hilo_fits</code></pre>
+<pre><code>## [[1]]</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/hilofits-1.png" width="4200" /></p>
+<pre><code>## 
+## [[2]]</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/hilofits-2.png" width="4200" /></p>
+<pre><code>## 
+## [[3]]</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/hilofits-3.png" width="4200" /></p>
+<pre><code>## 
+## [[4]]</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/hilofits-4.png" width="4200" /></p>
+<p>The fits look good. All of the fits will be shown at the end.</p>
+<p>For robustness, let’s compare the BP<sub>ND</sub> values to those estimated using a linear method. We’ll use MRTM1 and MRTM2. MRTM1 will be used to assess k2prime, and MRTM2 will be used to assess BP<sub>ND</sub>.</p>
+<pre class="r"><code>modeldata_long &lt;- modeldata_long %&gt;% 
+  group_by(path) %&gt;% 
+  mutate(mrtm1out = map(tacs, ~mrtm1(t_tac = .x$times,
+                              reftac = .x$CBL, 
+                              roitac = .x$Radioactivity, 
+                              weights = .x$weights)),
+         mrtm1_k2prime = map_dbl(mrtm1out, c(&#39;par&#39;, &#39;k2prime&#39;))) %&gt;% 
+  mutate(mrtm2out = map2(tacs, mrtm1_k2prime, ~mrtm2(t_tac = .x$times,
+                              reftac = .x$CBL, 
+                              roitac = .x$Radioactivity, 
+                              weights = .x$weights,
+                              k2prime = .y)),
+         mrtm2_bp = map_dbl(mrtm2out, c(&#39;par&#39;, &#39;bp&#39;)))</code></pre>
+<p>Now let’s assess the relation between the BP<sub>ND</sub> outcomes from these two measures</p>
+<pre class="r"><code>modeldata_long %&gt;% 
+  group_by(ROI) %&gt;% 
+  summarise(R2 = cor(srtm_bp, mrtm2_bp)^2) %&gt;% 
+  knitr::kable(digits=4)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">ROI</th>
+<th align="right">R2</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">DLPFC</td>
+<td align="right">0.9996</td>
+</tr>
+<tr class="even">
+<td align="left">STR</td>
+<td align="right">0.9997</td>
+</tr>
+</tbody>
+</table>
+<p>That’s a pretty good correspondence. I think we can rest assured that the modelling has gone acceptably.</p>
+</div>
+<div id="correcting-for-bias" class="section level2">
+<h2>Correcting for bias</h2>
+<p>Now we wish to create new BP<sub>ND</sub> values for those individuals whose measurements were shorter.</p>
+<pre class="r"><code>bp_data &lt;- modeldata_long %&gt;%
+  ungroup() %&gt;% 
+  mutate(measLength = map_dbl(tacs, ~round(sum(.$durations))),
+         frames = map_dbl(tacs, ~nrow(.x)-1) ) %&gt;% 
+  select(Subjname, PETNo, ROI, measLength, frames, rawbp = srtm_bp) %&gt;% 
+  left_join(select(ts_analysis_mid_summary, 
+                   measLength=PETlength, ROI, mean_percdif)) %&gt;% 
+  mutate(bp = rawbp/mean_percdif)</code></pre>
+<pre><code>## Joining, by = c(&quot;ROI&quot;, &quot;measLength&quot;)</code></pre>
+
+</div>
+</div>
+<div id="combining-the-tac-data-with-the-metadata" class="section level1">
+<h1>Combining the TAC data with the metadata</h1>
+<p>Reading in the file</p>
+<pre class="r"><code>demographics &lt;- read_excel(&#39;RawData/D1 schiz demographics.xlsx&#39;) %&gt;% 
+  select(id, CtrPat = `ctr/pat`, Age =`Age (yr)`, `PET date`, MBq, ecat=`ecat6 / ecat7 file`,
+         NeuroInsert=`Neuro-incert`, PET2D3D=`2D/3D`, rzfilter_res=`r-z filter resolution`,
+         filtercutoff_freq = `Filter cutoff frequency`, MRI, Sex=`m/f`,
+         pairNo = `h#/p#`, Occ_calibration) %&gt;% 
+  filter(!is.na( CtrPat)) %&gt;% 
+  mutate(Subjname = stringr::str_replace(id, &#39;[0-9]&#39;, &#39;&#39;)) %&gt;% 
+  mutate(pairNo = as.numeric(stringr::str_replace(pairNo, &#39;[hp]&#39;, &#39;&#39;)))</code></pre>
+<p>There are hidden rows in the sheet which mess things up. Had to filter by missing values in CtrPat to fix this.</p>
+<p>And combining with the bp data</p>
+<pre class="r"><code>bp_data &lt;- left_join(bp_data, demographics) %&gt;% 
+  mutate(bp = bp/Occ_calibration) # Calibration for potential occupancy for one individual</code></pre>
+<pre><code>## Joining, by = &quot;Subjname&quot;</code></pre>
+
+</div>
+<div id="potential-confounder-effects" class="section level1">
+<h1>Potential confounder effects</h1>
+<p>Let’s first define a function for the tests</p>
+<pre class="r"><code>t_test &lt;- function(df, IV, DV=&#39;bp&#39;, mu = 0, alt = &quot;two.sided&quot;, paired = F, conf.level = .95) {
+  vals &lt;- unique(df[[IV]])
+  if(length(vals) != 2) stop(&#39;incorrect number of IV options&#39;)
+  
+  group1 &lt;- df[ df[[IV]]==vals[1], ][[DV]]
+  group2 &lt;- df[ df[[IV]]==vals[2], ][[DV]]
+  
+  tidy(t.test(x=group1, y=group2,
+              mu = mu, 
+              alternative = alt,
+              paired = paired,
+              conf.level = conf.level)) %&gt;% 
+    select(estimate:statistic, parameter, p.value, method)
+}
+
+powerTOSTtwo(0.05, 0.8, N=18)</code></pre>
+<pre><code>## The equivalence bounds to achieve 80 % power with N = 18 are -0.98 and 0.98 .</code></pre>
+<pre><code>## </code></pre>
+<pre><code>## [1] -0.9754684  0.9754684</code></pre>
+<pre class="r"><code>tost_test &lt;- function(df, IV, DV=&#39;bp&#39;, lobound=-.98, hibound=.98) {
+  
+  vals &lt;- unique(df[[IV]])
+  
+  group1 &lt;- df[ df[[IV]]==vals[1], ][[DV]]
+  group2 &lt;- df[ df[[IV]]==vals[2], ][[DV]]
+  
+  n1 = length(group1)
+  n2 = length(group2)
+  m1 &lt;- mean(group1)
+  m2 &lt;- mean(group2)
+  sd1 &lt;- sd(group1)
+  sd2 &lt;- sd(group2)
+  
+capture.output(  tostout &lt;- TOSTtwo(m1,m2,sd1,sd2,n1,n2,low_eqbound_d=lobound,high_eqbound_d=hibound) )
+  
+  output &lt;- tibble(diff = tostout$diff, tost_p.value = max( c(tostout$TOST_p1, tostout$TOST_p2)) )
+  return(output)
+}</code></pre>
+<div id="biological-confounders" class="section level2">
+<h2>Biological confounders</h2>
+<p>The main two biological confounders here are likely to be age and sex. Age is known to influence D1R availability, and sex affects availability of many different tracers. Let’s assess these first.</p>
+<div id="age-at-pet" class="section level3">
+<h3>Age at PET</h3>
+<p>Age is known to be associated with D1R BP<sub>ND</sub>. Do we find this in this data set?</p>
+<pre class="r"><code>ggplot(bp_data, aes(x=Age, y=bp)) +
+  geom_point() +
+  geom_smooth(method=&quot;lm&quot;) +
+  facet_grid(ROI~., scales=&#39;free_y&#39;) +
+  labs(x=&#39;Age&#39;, y=expression(BP[ND])) +
+  theme_bw()</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_age-1.png" width="4200" /></p>
+<p>There is a clear association between Age and D1R BP<sub>ND</sub>. This may need to be accounted for in a model.</p>
+</div>
+<div id="sex" class="section level3">
+<h3>Sex</h3>
+<pre class="r"><code>bp_data &lt;- bp_data %&gt;% 
+  mutate(Sex = ifelse(Sex==&quot;m&quot;, &quot;Male&quot;, &quot;Female&quot;))
+
+ggplot(bp_data, aes(x=factor(Sex), y=bp, colour=factor(Sex), fill=factor(Sex))) +
+  geom_violin(alpha=0.25) +
+  geom_point() +
+  facet_grid(ROI~., scales=&#39;free_y&#39;) +
+  scale_colour_discrete(&#39;Sex&#39;) +
+  scale_fill_discrete(&#39;Sex&#39;) +
+  labs(x=&#39;Sex&#39;, y=expression(BP[ND]))</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_sex-1.png" width="4200" /></p>
+<pre class="r"><code>bp_data %&gt;% 
+   group_by(ROI) %&gt;%
+   nest() %&gt;% 
+   mutate(comparison = map(data, ~t_test(df=.x, IV=&#39;Sex&#39;) ) ) %&gt;% 
+   pull(comparison) %&gt;% 
+   do.call(rbind,.) %&gt;% 
+   kable(digits=3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">estimate</th>
+<th align="right">estimate1</th>
+<th align="right">estimate2</th>
+<th align="right">statistic</th>
+<th align="right">parameter</th>
+<th align="right">p.value</th>
+<th align="left">method</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">0.198</td>
+<td align="right">1.641</td>
+<td align="right">1.443</td>
+<td align="right">3.354</td>
+<td align="right">32.214</td>
+<td align="right">0.002</td>
+<td align="left">Welch Two Sample t-test</td>
+</tr>
+<tr class="even">
+<td align="right">0.053</td>
+<td align="right">0.325</td>
+<td align="right">0.272</td>
+<td align="right">2.493</td>
+<td align="right">32.403</td>
+<td align="right">0.018</td>
+<td align="left">Welch Two Sample t-test</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>bp_data %&gt;% 
+   group_by(ROI) %&gt;%
+   nest() %&gt;% 
+   mutate(comparison = map(data, ~tost_test(df=.x, IV=&#39;Sex&#39;) ) ) %&gt;% 
+   select(ROI, comparison) %&gt;% 
+   unnest() %&gt;% 
+   kable(digits=3)</code></pre>
+<pre><code>## </code></pre>
+<pre><code>## </code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_sex-2.png" width="4200" /></p>
+<pre><code>## </code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_sex-3.png" width="4200" /></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">ROI</th>
+<th align="right">diff</th>
+<th align="right">tost_p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">STR</td>
+<td align="right">0.198</td>
+<td align="right">0.595</td>
+</tr>
+<tr class="even">
+<td align="left">DLPFC</td>
+<td align="right">0.053</td>
+<td align="right">0.311</td>
+</tr>
+</tbody>
+</table>
+<p>These two do appear to differ from one another, and there is also a significant difference between them. This may need to be accounted for in a model.</p>
+<p>It is possible that these changes are accounted for by differences in age. We can test this by examining the distribution of age in both samples</p>
+<pre class="r"><code>bp_data %&gt;% 
+  filter(ROI==&#39;DLPFC&#39;) %&gt;% 
+  ggplot(aes(x=Sex, y=Age, colour=bp)) +
+    geom_violin() +
+    geom_point() +
+    scale_colour_viridis()</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/unnamed-chunk-16-1.png" width="4200" /></p>
+<pre class="r"><code>bp_data %&gt;% 
+   filter(ROI==&#39;DLPFC&#39;) %&gt;%
+   nest() %&gt;% 
+   mutate(comparison = map(data, ~t_test(df=.x, IV=&#39;Sex&#39;, DV=&#39;Age&#39;) ) ) %&gt;% 
+   pull(comparison) %&gt;% 
+   do.call(rbind,.) %&gt;% 
+   kable(digits=3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">estimate</th>
+<th align="right">estimate1</th>
+<th align="right">estimate2</th>
+<th align="right">statistic</th>
+<th align="right">parameter</th>
+<th align="right">p.value</th>
+<th align="left">method</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">-3.46</td>
+<td align="right">29.299</td>
+<td align="right">32.76</td>
+<td align="right">-0.996</td>
+<td align="right">17.49</td>
+<td align="right">0.333</td>
+<td align="left">Welch Two Sample t-test</td>
+</tr>
+</tbody>
+</table>
+<p>This does not appear to be the case: there does not appear to be a difference in age. It does, however, appear that there could be an interaction of age and sex.</p>
+<pre class="r"><code>bp_data %&gt;% 
+  ggplot(aes(x=Age, y=bp, colour=Sex)) +
+    geom_point() +
+    geom_smooth(method=&quot;lm&quot;) +
+    facet_grid(ROI~., scales=&#39;free_y&#39;) +
+    labs(y=expression(BP[ND]))</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_agesex-1.png" width="4200" /></p>
+<pre class="r"><code>agesex_model &lt;- function(df) {
+  out &lt;- lm(bp ~ Age + Sex, data=df)
+  return(out)
+}
+
+agesexitx_model &lt;- function(df) {
+  out &lt;- lm(bp ~ Age + Sex + Age:Sex, data=df)
+  return(out)
+}
+
+agesex_fits &lt;- bp_data %&gt;% 
+  group_by(ROI) %&gt;% 
+  nest() %&gt;% 
+  mutate(agesex = map(data, ~agesex_model(.x))) %&gt;% 
+  mutate(agesex_itx = map(data, ~agesexitx_model(.x)))
+
+print(paste0(&#39;Region: &#39;, agesex_fits$ROI[1]))</code></pre>
+<pre><code>## [1] &quot;Region: STR&quot;</code></pre>
+<pre class="r"><code>summary(agesex_fits$agesex[[1]])</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = bp ~ Age + Sex, data = df)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.26978 -0.14110 -0.01712  0.10384  0.34771 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  1.87559    0.12281  15.272    3e-16 ***
+## Age         -0.01321    0.00342  -3.862 0.000515 ***
+## SexMale      0.15238    0.06321   2.411 0.021840 *  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.1744 on 32 degrees of freedom
+## Multiple R-squared:  0.4395, Adjusted R-squared:  0.4045 
+## F-statistic: 12.55 on 2 and 32 DF,  p-value: 9.488e-05</code></pre>
+<pre class="r"><code>print(paste0(&#39;Region: &#39;, agesex_fits$ROI[2]))</code></pre>
+<pre><code>## [1] &quot;Region: DLPFC&quot;</code></pre>
+<pre class="r"><code>summary(agesex_fits$agesex[[2]])</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = bp ~ Age + Sex, data = df)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.083667 -0.042806 -0.000916  0.030043  0.145660 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  0.434305   0.038673  11.230 1.23e-12 ***
+## Age         -0.004942   0.001077  -4.590 6.52e-05 ***
+## SexMale      0.035644   0.019904   1.791   0.0828 .  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.05491 on 32 degrees of freedom
+## Multiple R-squared:  0.4697, Adjusted R-squared:  0.4366 
+## F-statistic: 14.17 on 2 and 32 DF,  p-value: 3.912e-05</code></pre>
+<pre class="r"><code>kable(tidy(agesex_fits$agesex[[2]]), digits=3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">term</th>
+<th align="right">estimate</th>
+<th align="right">std.error</th>
+<th align="right">statistic</th>
+<th align="right">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">(Intercept)</td>
+<td align="right">0.434</td>
+<td align="right">0.039</td>
+<td align="right">11.230</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">Age</td>
+<td align="right">-0.005</td>
+<td align="right">0.001</td>
+<td align="right">-4.590</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">SexMale</td>
+<td align="right">0.036</td>
+<td align="right">0.020</td>
+<td align="right">1.791</td>
+<td align="right">0.083</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>print(paste0(&#39;Region: &#39;, agesex_fits$ROI[1]))</code></pre>
+<pre><code>## [1] &quot;Region: STR&quot;</code></pre>
+<pre class="r"><code>summary(agesex_fits$agesex_itx[[1]])</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = bp ~ Age + Sex + Age:Sex, data = df)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.28696 -0.10748 -0.00133  0.11137  0.39036 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  1.577914   0.154330  10.224 1.88e-11 ***
+## Age         -0.004120   0.004500  -0.916  0.36688    
+## SexMale      0.692379   0.201810   3.431  0.00172 ** 
+## Age:SexMale -0.017357   0.006219  -2.791  0.00891 ** 
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.1584 on 31 degrees of freedom
+## Multiple R-squared:  0.5521, Adjusted R-squared:  0.5087 
+## F-statistic: 12.74 on 3 and 31 DF,  p-value: 1.358e-05</code></pre>
+<pre class="r"><code>kable(tidy(agesex_fits$agesex_itx[[1]]), digits=3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">term</th>
+<th align="right">estimate</th>
+<th align="right">std.error</th>
+<th align="right">statistic</th>
+<th align="right">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">(Intercept)</td>
+<td align="right">1.578</td>
+<td align="right">0.154</td>
+<td align="right">10.224</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">Age</td>
+<td align="right">-0.004</td>
+<td align="right">0.004</td>
+<td align="right">-0.916</td>
+<td align="right">0.367</td>
+</tr>
+<tr class="odd">
+<td align="left">SexMale</td>
+<td align="right">0.692</td>
+<td align="right">0.202</td>
+<td align="right">3.431</td>
+<td align="right">0.002</td>
+</tr>
+<tr class="even">
+<td align="left">Age:SexMale</td>
+<td align="right">-0.017</td>
+<td align="right">0.006</td>
+<td align="right">-2.791</td>
+<td align="right">0.009</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>print(paste0(&#39;Region: &#39;, agesex_fits$ROI[2]))</code></pre>
+<pre><code>## [1] &quot;Region: DLPFC&quot;</code></pre>
+<pre class="r"><code>summary(agesex_fits$agesex_itx[[2]])</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = bp ~ Age + Sex + Age:Sex, data = df)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.095075 -0.028708 -0.000733  0.027616  0.131117 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  0.346222   0.049305   7.022 6.97e-08 ***
+## Age         -0.002253   0.001438  -1.568  0.12712    
+## SexMale      0.195432   0.064474   3.031  0.00489 ** 
+## Age:SexMale -0.005136   0.001987  -2.585  0.01466 *  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.0506 on 31 degrees of freedom
+## Multiple R-squared:  0.5637, Adjusted R-squared:  0.5215 
+## F-statistic: 13.35 on 3 and 31 DF,  p-value: 9.105e-06</code></pre>
+<pre class="r"><code>kable(tidy(agesex_fits$agesex_itx[[2]]), digits=3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">term</th>
+<th align="right">estimate</th>
+<th align="right">std.error</th>
+<th align="right">statistic</th>
+<th align="right">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">(Intercept)</td>
+<td align="right">0.346</td>
+<td align="right">0.049</td>
+<td align="right">7.022</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">Age</td>
+<td align="right">-0.002</td>
+<td align="right">0.001</td>
+<td align="right">-1.568</td>
+<td align="right">0.127</td>
+</tr>
+<tr class="odd">
+<td align="left">SexMale</td>
+<td align="right">0.195</td>
+<td align="right">0.064</td>
+<td align="right">3.031</td>
+<td align="right">0.005</td>
+</tr>
+<tr class="even">
+<td align="left">Age:SexMale</td>
+<td align="right">-0.005</td>
+<td align="right">0.002</td>
+<td align="right">-2.585</td>
+<td align="right">0.015</td>
+</tr>
+</tbody>
+</table>
+<p>Including both main effects and an interaction in the final model is likely to present some issues for the power of the study for assessing patient status. Let’s aim for including age and sex in a potential final model, and we can consider the interaction term at a later point.</p>
+</div>
+</div>
+<div id="r-z-filter" class="section level2">
+<h2>R-Z Filter</h2>
+<div id="resolution" class="section level3">
+<h3>Resolution</h3>
+<pre class="r"><code>ggplot(bp_data, aes(x=factor(rzfilter_res), y=bp, colour=factor(rzfilter_res), fill=factor(rzfilter_res))) +
+  geom_violin(alpha=0.25) +
+  geom_point() +
+  facet_grid(ROI~., scales=&#39;free_y&#39;) +
+  scale_colour_discrete(&#39;R-Z Filter Resolution&#39;) +
+  scale_fill_discrete(&#39;R-Z Filter Resolution&#39;) +
+  labs(x=&#39;R-Z Filter Resolution&#39;, y=expression(BP[ND]))</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_rzres-1.png" width="4200" /></p>
+<pre class="r"><code>bp_data %&gt;% 
+   group_by(ROI) %&gt;%
+   nest() %&gt;% 
+   mutate(comparison = map(data, ~t_test(df=.x, IV=&#39;rzfilter_res&#39;) ) ) %&gt;% 
+   select(ROI, comparison) %&gt;% 
+   unnest() %&gt;% 
+   kable(digits=3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">ROI</th>
+<th align="right">estimate</th>
+<th align="right">estimate1</th>
+<th align="right">estimate2</th>
+<th align="right">statistic</th>
+<th align="right">parameter</th>
+<th align="right">p.value</th>
+<th align="left">method</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">STR</td>
+<td align="right">0.044</td>
+<td align="right">1.593</td>
+<td align="right">1.549</td>
+<td align="right">0.559</td>
+<td align="right">29.428</td>
+<td align="right">0.581</td>
+<td align="left">Welch Two Sample t-test</td>
+</tr>
+<tr class="even">
+<td align="left">DLPFC</td>
+<td align="right">0.010</td>
+<td align="right">0.312</td>
+<td align="right">0.302</td>
+<td align="right">0.378</td>
+<td align="right">25.568</td>
+<td align="right">0.709</td>
+<td align="left">Welch Two Sample t-test</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>bp_data %&gt;% 
+   group_by(ROI) %&gt;%
+   nest() %&gt;% 
+   mutate(comparison = map(data, ~tost_test(df=.x, IV=&#39;rzfilter_res&#39;) ) ) %&gt;% 
+   select(ROI, comparison) %&gt;% 
+   unnest() %&gt;% 
+   kable(digits=3)</code></pre>
+<pre><code>## </code></pre>
+<pre><code>## </code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_rzres-2.png" width="4200" /></p>
+<pre><code>## </code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_rzres-3.png" width="4200" /></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">ROI</th>
+<th align="right">diff</th>
+<th align="right">tost_p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">STR</td>
+<td align="right">0.044</td>
+<td align="right">0.014</td>
+</tr>
+<tr class="even">
+<td align="left">DLPFC</td>
+<td align="right">0.010</td>
+<td align="right">0.010</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="cutoff" class="section level3">
+<h3>Cutoff</h3>
+<pre class="r"><code>ggplot(bp_data, aes(x=factor(filtercutoff_freq), y=bp, colour=factor(filtercutoff_freq), fill=factor(filtercutoff_freq))) +
+  geom_violin(alpha=0.25) +
+  geom_point() +
+  facet_grid(ROI~., scales=&#39;free_y&#39;) +
+  scale_colour_discrete(&#39;R-Z Filter Cutoff&#39;) +
+  scale_fill_discrete(&#39;R-Z Filter Cutoff&#39;) +
+  labs(x=&#39;R-Z Filter Cutoff&#39;, y=expression(BP[ND]))</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_rzcutoff-1.png" width="4200" /></p>
+<pre class="r"><code>bp_data %&gt;% 
+   group_by(ROI) %&gt;%
+   nest() %&gt;% 
+   mutate(comparison = map(data, ~t_test(df=.x, IV=&#39;filtercutoff_freq&#39;) ) ) %&gt;% 
+   select(ROI, comparison) %&gt;% 
+   unnest() %&gt;% 
+   kable(digits=3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">ROI</th>
+<th align="right">estimate</th>
+<th align="right">estimate1</th>
+<th align="right">estimate2</th>
+<th align="right">statistic</th>
+<th align="right">parameter</th>
+<th align="right">p.value</th>
+<th align="left">method</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">STR</td>
+<td align="right">-0.033</td>
+<td align="right">1.571</td>
+<td align="right">1.605</td>
+<td align="right">-0.118</td>
+<td align="right">1.038</td>
+<td align="right">0.925</td>
+<td align="left">Welch Two Sample t-test</td>
+</tr>
+<tr class="even">
+<td align="left">DLPFC</td>
+<td align="right">-0.047</td>
+<td align="right">0.304</td>
+<td align="right">0.352</td>
+<td align="right">-0.686</td>
+<td align="right">1.071</td>
+<td align="right">0.611</td>
+<td align="left">Welch Two Sample t-test</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>bp_data %&gt;% 
+   group_by(ROI) %&gt;%
+   nest() %&gt;% 
+   mutate(comparison = map(data, ~tost_test(df=.x, IV=&#39;filtercutoff_freq&#39;) ) ) %&gt;% 
+   select(ROI, comparison) %&gt;% 
+   unnest() %&gt;% 
+   kable(digits=3)</code></pre>
+<pre><code>## </code></pre>
+<pre><code>## </code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_rzcutoff-2.png" width="4200" /></p>
+<pre><code>## </code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_rzcutoff-3.png" width="4200" /></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">ROI</th>
+<th align="right">diff</th>
+<th align="right">tost_p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">STR</td>
+<td align="right">-0.033</td>
+<td align="right">0.249</td>
+</tr>
+<tr class="even">
+<td align="left">DLPFC</td>
+<td align="right">-0.047</td>
+<td align="right">0.344</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="ecat-file-format" class="section level2">
+<h2>ECAT file format</h2>
+<pre class="r"><code>ggplot(bp_data, aes(x=factor(ecat), y=bp, colour=factor(ecat), fill=factor(ecat))) +
+  geom_violin(alpha=0.25) +
+  geom_point() +
+  facet_grid(ROI~., scales=&#39;free_y&#39;) +
+  scale_colour_discrete(&#39;ecat file format&#39;) +
+  scale_fill_discrete(&#39;ecat file format&#39;) +
+  labs(x=&#39;ecat file format&#39;, y=expression(BP[ND]))</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_fileformat-1.png" width="4200" /></p>
+<pre class="r"><code>bp_data %&gt;% 
+   group_by(ROI) %&gt;%
+   nest() %&gt;% 
+   mutate(comparison = map(data, ~t_test(df=.x, IV=&#39;ecat&#39;) ) ) %&gt;% 
+   select(ROI, comparison) %&gt;% 
+   unnest() %&gt;% 
+   kable(digits=3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">ROI</th>
+<th align="right">estimate</th>
+<th align="right">estimate1</th>
+<th align="right">estimate2</th>
+<th align="right">statistic</th>
+<th align="right">parameter</th>
+<th align="right">p.value</th>
+<th align="left">method</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">STR</td>
+<td align="right">0.037</td>
+<td align="right">1.592</td>
+<td align="right">1.555</td>
+<td align="right">0.477</td>
+<td align="right">32.255</td>
+<td align="right">0.637</td>
+<td align="left">Welch Two Sample t-test</td>
+</tr>
+<tr class="even">
+<td align="left">DLPFC</td>
+<td align="right">0.004</td>
+<td align="right">0.309</td>
+<td align="right">0.305</td>
+<td align="right">0.153</td>
+<td align="right">30.587</td>
+<td align="right">0.880</td>
+<td align="left">Welch Two Sample t-test</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>bp_data %&gt;% 
+   group_by(ROI) %&gt;%
+   nest() %&gt;% 
+   mutate(comparison = map(data, ~tost_test(df=.x, IV=&#39;ecat&#39;) ) ) %&gt;% 
+   select(ROI, comparison) %&gt;% 
+   unnest() %&gt;% 
+   kable(digits=3)</code></pre>
+<pre><code>## </code></pre>
+<pre><code>## </code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_fileformat-2.png" width="4200" /></p>
+<pre><code>## </code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_fileformat-3.png" width="4200" /></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">ROI</th>
+<th align="right">diff</th>
+<th align="right">tost_p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">STR</td>
+<td align="right">0.037</td>
+<td align="right">0.010</td>
+</tr>
+<tr class="even">
+<td align="left">DLPFC</td>
+<td align="right">0.004</td>
+<td align="right">0.005</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="pet-2d-vs-3d" class="section level2">
+<h2>PET 2D vs 3D</h2>
+<pre class="r"><code>ggplot(bp_data, aes(x=factor(PET2D3D), y=bp, colour=factor(PET2D3D), fill=factor(PET2D3D))) +
+  geom_violin(alpha=0.25) +
+  geom_point() +
+  facet_grid(ROI~., scales=&#39;free_y&#39;) +
+  scale_colour_discrete(&#39;2D vs 3D PET&#39;) +
+  scale_fill_discrete(&#39;2D vs 3D PET&#39;) +
+  labs(x=&#39;2D vs 3D PET&#39;, y=expression(BP[ND]))</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_2D3D-1.png" width="4200" /></p>
+<pre class="r"><code>bp_data %&gt;% 
+   group_by(ROI) %&gt;%
+   nest() %&gt;% 
+   mutate(comparison = map(data, ~t_test(df=.x, IV=&#39;PET2D3D&#39;) ) ) %&gt;% 
+   select(ROI, comparison) %&gt;% 
+   unnest() %&gt;% 
+   kable(digits=3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">ROI</th>
+<th align="right">estimate</th>
+<th align="right">estimate1</th>
+<th align="right">estimate2</th>
+<th align="right">statistic</th>
+<th align="right">parameter</th>
+<th align="right">p.value</th>
+<th align="left">method</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">STR</td>
+<td align="right">0.082</td>
+<td align="right">1.578</td>
+<td align="right">1.495</td>
+<td align="right">2.019</td>
+<td align="right">32.892</td>
+<td align="right">0.052</td>
+<td align="left">Welch Two Sample t-test</td>
+</tr>
+<tr class="even">
+<td align="left">DLPFC</td>
+<td align="right">0.044</td>
+<td align="right">0.310</td>
+<td align="right">0.265</td>
+<td align="right">1.587</td>
+<td align="right">1.626</td>
+<td align="right">0.280</td>
+<td align="left">Welch Two Sample t-test</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>bp_data %&gt;% 
+   group_by(ROI) %&gt;%
+   nest() %&gt;% 
+   mutate(comparison = map(data, ~tost_test(df=.x, IV=&#39;PET2D3D&#39;) ) ) %&gt;% 
+   select(ROI, comparison) %&gt;% 
+   unnest() %&gt;% 
+   kable(digits=3)</code></pre>
+<pre><code>## </code></pre>
+<pre><code>## </code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_2D3D-2.png" width="4200" /></p>
+<pre><code>## </code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_2D3D-3.png" width="4200" /></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">ROI</th>
+<th align="right">diff</th>
+<th align="right">tost_p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">STR</td>
+<td align="right">0.082</td>
+<td align="right">0.032</td>
+</tr>
+<tr class="even">
+<td align="left">DLPFC</td>
+<td align="right">0.044</td>
+<td align="right">0.350</td>
+</tr>
+</tbody>
+</table>
+<p>These two may differ, but we don’t have enough information to tell. It certainly seems plausible. It would be best to run the analysis later both with and without these individuals.</p>
+</div>
+<div id="neuroinsert" class="section level2">
+<h2>NeuroInsert</h2>
+<p>This is a shield which shields radiation from the body. We consider it important for 3D scans, but not for 2D scans. Firstly, is this a problem? Let’s check for those measurements which are in 3D whether the insert was present</p>
+<pre class="r"><code>bp_data %&gt;% 
+  filter(PET2D3D==&#39;3D&#39;) %&gt;% 
+  pull(NeuroInsert)</code></pre>
+<pre><code>## [1] &quot;yes&quot; &quot;yes&quot; &quot;yes&quot; &quot;yes&quot;</code></pre>
+<p>Ok, so all 3D measurements were conducted with the NeuroInsert. This is good news. So we should not need to exclude anyone on this front. Let’s check if there is any bias with and without the insert.</p>
+<pre class="r"><code>ggplot(bp_data, aes(x=factor(NeuroInsert), y=bp, colour=factor(NeuroInsert), fill=factor(NeuroInsert))) +
+  geom_violin(alpha=0.25) +
+  geom_point() +
+  facet_grid(ROI~., scales=&#39;free_y&#39;) +
+  scale_colour_discrete(&#39;NeuroInsert&#39;) +
+  scale_fill_discrete(&#39;NeuroInsert&#39;) +
+  labs(x=&#39;NeuroInsert&#39;, y=expression(BP[ND]))</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_shield-1.png" width="4200" /></p>
+<pre class="r"><code>bp_data %&gt;% 
+   group_by(ROI) %&gt;%
+   nest() %&gt;% 
+   mutate(comparison = map(data, ~t_test(df=.x, IV=&#39;NeuroInsert&#39;) ) ) %&gt;% 
+   pull(comparison) %&gt;% 
+   do.call(rbind,.) %&gt;% 
+   kable(digits=3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">estimate</th>
+<th align="right">estimate1</th>
+<th align="right">estimate2</th>
+<th align="right">statistic</th>
+<th align="right">parameter</th>
+<th align="right">p.value</th>
+<th align="left">method</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">0.037</td>
+<td align="right">1.592</td>
+<td align="right">1.555</td>
+<td align="right">0.477</td>
+<td align="right">32.255</td>
+<td align="right">0.637</td>
+<td align="left">Welch Two Sample t-test</td>
+</tr>
+<tr class="even">
+<td align="right">0.004</td>
+<td align="right">0.309</td>
+<td align="right">0.305</td>
+<td align="right">0.153</td>
+<td align="right">30.587</td>
+<td align="right">0.880</td>
+<td align="left">Welch Two Sample t-test</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>bp_data %&gt;% 
+   group_by(ROI) %&gt;%
+   nest() %&gt;% 
+   mutate(comparison = map(data, ~tost_test(df=.x, IV=&#39;NeuroInsert&#39;) ) ) %&gt;% 
+   select(ROI, comparison) %&gt;% 
+   unnest() %&gt;% 
+   kable(digits=3)</code></pre>
+<pre><code>## </code></pre>
+<pre><code>## </code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_shield-2.png" width="4200" /></p>
+<pre><code>## </code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_shield-3.png" width="4200" /></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">ROI</th>
+<th align="right">diff</th>
+<th align="right">tost_p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">STR</td>
+<td align="right">0.037</td>
+<td align="right">0.010</td>
+</tr>
+<tr class="even">
+<td align="left">DLPFC</td>
+<td align="right">0.004</td>
+<td align="right">0.005</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="mr-modality" class="section level2">
+<h2>MR Modality</h2>
+<p>Some measurements only had T2 MR measurements. These measurements therefore have lower spatial accuracy for ROI delineation. This could well present a problem.</p>
+<pre class="r"><code>ggplot(bp_data, aes(x=factor(MRI), y=bp, colour=factor(MRI), fill=factor(MRI))) +
+  geom_violin(alpha=0.25) +
+  geom_point() +
+  facet_grid(ROI~., scales=&#39;free_y&#39;) +
+  scale_colour_discrete(&#39;MRI Modality&#39;) +
+  scale_fill_discrete(&#39;MRI Modality&#39;) +
+  labs(x=&#39;MRI Modality&#39;, y=expression(BP[ND]))</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_mr-1.png" width="4200" /></p>
+<pre class="r"><code>bp_data %&gt;% 
+   group_by(ROI) %&gt;%
+   nest() %&gt;% 
+   mutate(comparison = map(data, ~t_test(df=.x, IV=&#39;MRI&#39;) ) ) %&gt;% 
+   select(ROI, comparison) %&gt;% 
+   unnest() %&gt;% 
+   kable(digits=3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">ROI</th>
+<th align="right">estimate</th>
+<th align="right">estimate1</th>
+<th align="right">estimate2</th>
+<th align="right">statistic</th>
+<th align="right">parameter</th>
+<th align="right">p.value</th>
+<th align="left">method</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">STR</td>
+<td align="right">0.066</td>
+<td align="right">1.609</td>
+<td align="right">1.543</td>
+<td align="right">0.870</td>
+<td align="right">32.883</td>
+<td align="right">0.391</td>
+<td align="left">Welch Two Sample t-test</td>
+</tr>
+<tr class="even">
+<td align="left">DLPFC</td>
+<td align="right">0.006</td>
+<td align="right">0.311</td>
+<td align="right">0.304</td>
+<td align="right">0.264</td>
+<td align="right">32.550</td>
+<td align="right">0.793</td>
+<td align="left">Welch Two Sample t-test</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>bp_data %&gt;% 
+   group_by(ROI) %&gt;%
+   nest() %&gt;% 
+   mutate(comparison = map(data, ~tost_test(df=.x, IV=&#39;MRI&#39;) ) ) %&gt;% 
+   select(ROI, comparison) %&gt;% 
+   unnest() %&gt;% 
+   kable(digits=3)</code></pre>
+<pre><code>## </code></pre>
+<pre><code>## </code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_mr-2.png" width="4200" /></p>
+<pre><code>## </code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_mr-3.png" width="4200" /></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">ROI</th>
+<th align="right">diff</th>
+<th align="right">tost_p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">STR</td>
+<td align="right">0.066</td>
+<td align="right">0.024</td>
+</tr>
+<tr class="even">
+<td align="left">DLPFC</td>
+<td align="right">0.006</td>
+<td align="right">0.006</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="date-of-measurement" class="section level2">
+<h2>Date of Measurement</h2>
+<p>Is there a drift in BP<sub>ND</sub> values over time?</p>
+<p>I will plot the BP<sub>ND</sub> values over time, and plot both a smooth LOESS line as well as a linear model line.</p>
+<pre class="r"><code>ggplot(bp_data, aes(x=`PET date`, y=bp)) +
+  geom_point() +
+  geom_smooth(colour=&quot;red&quot;) +
+  geom_smooth(colour=&quot;blue&quot;, method=&quot;lm&quot;) +
+  theme_bw() +
+  facet_grid(ROI~., scales=&#39;free_y&#39;) +
+  labs(x=&#39;Date of PET&#39;, y=expression(BP[ND]))</code></pre>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_datecont-1.png" width="4200" /></p>
+<p>This doesn’t give the clearest picture because of the discontinuties. Let’s try just plotting it by year as a factor so that they can be next to one another.</p>
+<pre class="r"><code>bp_data %&gt;% 
+  mutate(PETYear = year(`PET date`)) %&gt;% 
+  arrange(PETYear) %&gt;% 
+  mutate(PETYear = as.factor(PETYear)) %&gt;% 
+  ggplot(aes(x=PETYear, y=bp)) +
+    geom_point(aes(colour=PETYear, fill=PETYear)) +
+    geom_violin(alpha=0.25, aes(colour=PETYear, fill=PETYear)) +
+    theme_bw() +
+    facet_grid(ROI~., scales=&#39;free_y&#39;) +
+    labs(x=&#39;Date of PET&#39;, y=expression(BP[ND])) +
+    guides(colour=FALSE, fill=FALSE)</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_datefact-1.png" width="4200" /></p>
+<p>There does not appear to be a strong trend here. This will be considered to be of little consequence.</p>
+</div>
+<div id="movement-during-the-measurement" class="section level2">
+<h2>Movement during the measurement</h2>
+<p>We cannot be sure about how much movement occurred during the frames, but we can assess the realignment parameters from the PET measurement to have an approximate idea of how much movement occurred during the measurement. First, we must match the realignment parameters to the frames. Frames less than a minute are accumulated together during correction, and this data is not saved.</p>
+<pre class="r"><code>dur2accumdur &lt;- function(dur) {
+  cumdur &lt;- round(cumsum(dur), 1)
+  dif &lt;- diff(cumdur)
+  
+  threemin &lt;- which(cumdur &gt; 3)[1] - 1
+  overthreemin &lt;- which(cumdur &gt; 3)
+  
+  accumDur &lt;- c(1,1,1,dur[overthreemin])
+  accumDur_cumsum &lt;- cumsum(accumDur)
+  midpoints &lt;- accumDur_cumsum - 0.5*accumDur
+  
+  return(midpoints)
+}
+
+modelrealigndata &lt;- modeldata %&gt;% 
+  select(Subjname, PETNo, measLength, frames, tacs) %&gt;% 
+  group_by(Subjname) %&gt;% 
+  mutate(realignTimes = map(tacs, ~dur2accumdur(.x$durations))) %&gt;% 
+  select(-tacs)
+
+petrealigndata &lt;- readRDS(&#39;realignpars.rds&#39;) %&gt;% 
+  select(-filename) %&gt;% 
+  group_by(Subjname) %&gt;% 
+  nest(.key=pet)
+
+cut_data &lt;- function(pet, nFrames, realignTimes) {
+  pet &lt;- pet[1:nFrames,]
+  pet$time = realignTimes
+  return(pet)
+}
+
+realigndata &lt;- left_join(modelrealigndata, petrealigndata) %&gt;% 
+  mutate(realignFrames = map_dbl(realignTimes, ~length(.x))) %&gt;% 
+  mutate(PETFrames = map_dbl(pet, ~nrow(.x))) %&gt;% 
+  mutate(nFrames = ifelse(realignFrames &lt; PETFrames, realignFrames, PETFrames)) %&gt;% 
+  mutate(pet = pmap(list(pet, nFrames, realignTimes), cut_data)) %&gt;% 
+  select(Subjname, pet) %&gt;%
+  unnest()</code></pre>
+<pre><code>## Joining, by = &quot;Subjname&quot;</code></pre>
+<p>Now let’s prepare it for plotting</p>
+<pre class="r"><code>realigndata &lt;- left_join(realigndata, demographics) %&gt;% 
+  select(Subjname:time, CtrPat) %&gt;% 
+  mutate(time = round(time, 1))</code></pre>
+<pre><code>## Joining, by = &quot;Subjname&quot;</code></pre>
+<pre class="r"><code>realign_movement &lt;- realigndata %&gt;% 
+  select(-pitch, -roll, -yaw) %&gt;% 
+  gather(Measure, Value, -Subjname, -accumFrame, -time, -CtrPat) %&gt;% 
+  mutate(TransRot = &#39;Translation&#39;)
+
+realign_rotation &lt;- realigndata %&gt;% 
+  select(-x, -y, -z) %&gt;% 
+  gather(Measure, Value, -Subjname, -accumFrame, -time, -CtrPat) %&gt;% 
+  mutate(TransRot = &#39;Rotation&#39;)
+
+realign_compare &lt;- bind_rows(realign_movement, realign_rotation)
+
+realign_sumStats &lt;- realign_compare %&gt;% 
+  ungroup() %&gt;% 
+  mutate(Value = abs(Value)) %&gt;% 
+  group_by(time, CtrPat, Measure, TransRot) %&gt;% 
+  summarise(mean=mean(Value),
+            median=median(Value),
+            sd = sd(Value),
+            mad = mad(Value),
+            min = min(Value),
+            max = max(Value),
+            q25 = quantile(Value, 0.25),
+            q75 = quantile(Value, 0.75),
+            q10 = quantile(Value, 0.1),
+            q90 = quantile(Value, 0.9),
+            n = n()) %&gt;% 
+  filter(time &lt; 51) %&gt;% 
+  ungroup() %&gt;% 
+  mutate(CtrPat = ifelse(CtrPat==&#39;ctr&#39;, &#39;Control&#39;, &#39;Patient&#39;))</code></pre>
+<pre class="r"><code>translation_plot &lt;- realign_sumStats %&gt;% 
+  filter(TransRot==&#39;Translation&#39;) %&gt;% 
+  ggplot(aes(x=time, y=median, colour=CtrPat, fill=CtrPat)) +
+  geom_line(size=2) +
+  geom_ribbon(aes(ymin=q10, ymax=q90), alpha=0.15, size=0) +
+  facet_grid(Measure~., scales=&quot;free&quot;) +
+  labs(x=&#39;Time (min)&#39;, y=&#39;Median Translation (mm)&#39;,
+       title=&#39;Translation by Group over Time&#39;,
+       subtitle=&#39;Median with shading denoting the 10% and 90% quantiles&#39;) +
+  scale_colour_manual(&#39;&#39;, values = c(&quot;#85d4e3&quot;, &quot;#e39f85&quot;)) +
+  scale_fill_manual(&#39;&#39;, values = c(&quot;#85d4e3&quot;, &quot;#e39f85&quot;)) +
+  theme_light()
+
+translation_plot</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_movtplots-1.png" width="4800" /></p>
+<pre class="r"><code>rotation_plot &lt;- realign_sumStats %&gt;% 
+  filter(TransRot==&#39;Rotation&#39;) %&gt;% 
+  ggplot(aes(x=time, y=median, colour=CtrPat, fill=CtrPat)) +
+  geom_line(size=2) +
+  geom_ribbon(aes(ymin=q10, ymax=q90), alpha=0.15, size=0) +
+  facet_grid(Measure~., scales=&quot;free&quot;) +
+  labs(x=&#39;Time (min)&#39;, y=&#39;Median Rotation (degrees)&#39;,
+       title=&#39;Rotation by Group over Time&#39;,
+       subtitle=&#39;Median with shading denoting the 10% and 90% quantiles&#39;) +
+  scale_colour_manual(&#39;&#39;, values = c(&quot;#85d4e3&quot;, &quot;#e39f85&quot;)) +
+  scale_fill_manual(&#39;&#39;, values = c(&quot;#85d4e3&quot;, &quot;#e39f85&quot;)) +
+  theme_light()
+
+rotation_plot</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_movtplots-2.png" width="4800" /></p>
+<pre class="r"><code>ggsave(translation_plot, width = 8, height = 10, filename = &#39;Figures/TranslationPlot.jpg&#39;)
+ggsave(rotation_plot, width = 8, height = 10, filename = &#39;Figures/RotationPlot.jpg&#39;)</code></pre>
+
+</div>
+</div>
+<div id="comparison-between-automatic-and-manual-rois" class="section level1">
+<h1>Comparison between automatic and manual ROIs</h1>
+<p>First I will remove the measurements shorter than 51 minutes, and remove the extra frames for those longer than 51 minutes.</p>
+<pre class="r"><code>modeldata_manauto &lt;- modeldata_manauto %&gt;% 
+  mutate(measLength = map_dbl(tacs, ~sum(.$durations))) %&gt;% 
+  filter(measLength &gt; 50) %&gt;% 
+  unnest() %&gt;% 
+  mutate(frameEnd = times+durations/2) %&gt;% 
+  filter(frameEnd &lt; 52) %&gt;% 
+  group_by(path, Subjname, PETNo, measLength) %&gt;% 
+  nest(.key = &#39;tacs&#39;)</code></pre>
+<p>Now, let’s model the data. I’ll divide it into a 2 <span class="math inline">\(\times\)</span> 2 design, of manual vs automatic for both manual and target ROIs. First, we make the data long.</p>
+<pre class="r"><code>modeldata_manauto_long &lt;- unnest(modeldata_manauto) %&gt;% 
+  gather(key = &#39;ROI&#39;, value = &#39;Radioactivity&#39;, -path, -Subjname, 
+         -PETNo, -measLength, -times, -CBL, -fslCBL,
+         -weights, -durations, -frameEnd) %&gt;% 
+  arrange(Subjname, PETNo, times) %&gt;% 
+  group_by(path, Subjname, PETNo, measLength, ROI) %&gt;% 
+  nest(.key = &#39;tacs&#39;)</code></pre>
+<p>For ease, I’ll make two variants of the data frame for fitting with automatic and manual CBL.</p>
+<pre class="r"><code>modeldata_manauto_long_manual &lt;- modeldata_manauto_long %&gt;% 
+  group_by(path) %&gt;% 
+  filter(!stringr::str_detect(ROI, &#39;fsl&#39;)) %&gt;% 
+  mutate(srtmout = map(tacs, ~srtm(t_tac = .x$times,
+                              reftac = .x$CBL, 
+                              roitac = .x$Radioactivity, 
+                              weights = .x$weights)),
+         srtm_bp = map_dbl(srtmout, c(&#39;par&#39;, &#39;bp&#39;)),
+         Delineation=&#39;Manual&#39;)
+
+modeldata_manauto_long_auto &lt;- modeldata_manauto_long %&gt;% 
+  group_by(path) %&gt;% 
+  filter(stringr::str_detect(ROI, &#39;fsl&#39;)) %&gt;% 
+  mutate(srtmout = map(tacs, ~srtm(t_tac = .x$times,
+                              reftac = .x$fslCBL, 
+                              roitac = .x$Radioactivity, 
+                              weights = .x$weights)),
+         srtm_bp = map_dbl(srtmout, c(&#39;par&#39;, &#39;bp&#39;)),
+         Delineation=&#39;Auto&#39;)
+
+modeldata_manauto_fitted &lt;- bind_rows(modeldata_manauto_long_manual, modeldata_manauto_long_auto) %&gt;% 
+  ungroup()</code></pre>
+<p>Now let’s organise this for analysis:</p>
+<pre class="r"><code>manauto &lt;- select(modeldata_manauto_fitted, Subjname, ROI, srtm_bp, Delineation) %&gt;% 
+  mutate(ROI = str_replace(ROI, &#39;fsl&#39;, &#39;&#39;)) %&gt;% 
+  spread(Delineation, srtm_bp) %&gt;% 
+  mutate(Bias = Manual / Auto)</code></pre>
+<p>Let’s examine correlations between methods</p>
+<pre class="r"><code>ggplot(manauto, aes(x=Manual, y=Auto)) +
+  geom_point() + 
+  geom_smooth(method=&quot;lm&quot;) +
+  facet_grid(~ROI, scales=&quot;free&quot;)</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_rois_corr1-1.png" width="4200" /></p>
+<p>This looks good: manual and striatal ROIs get similar BP<sub>ND</sub> values. We can see that there appears to be one outlier on the striatal plot, where the automatic ROI delineation appears to have failed. Let’s examine the distribution of the bias.</p>
+<pre class="r"><code>ggplot(manauto, aes(x=Bias)) +
+  geom_histogram(fill=&quot;blue&quot;, colour=&quot;black&quot;) +
+  facet_grid(.~ROI, scales=&quot;free&quot;)</code></pre>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_rois_bias1-1.png" width="4200" /></p>
+<p>We can exclude the extreme point, as the point of this analysis is just to make sure that there has not been any systematic bias in the ROI delineation between patients and controls.</p>
+<pre class="r"><code>manauto &lt;- filter(manauto, Bias &lt; 2)</code></pre>
+<p>And let’s plot the bias histogram again</p>
+<pre class="r"><code>ggplot(manauto, aes(x=Bias)) +
+  geom_histogram(fill=&quot;blue&quot;, colour=&quot;black&quot;) +
+  facet_grid(.~ROI, scales=&quot;free&quot;)</code></pre>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_rois_bias2-1.png" width="4200" /></p>
+<p>And let’s examine the correlation strengths</p>
+<pre class="r"><code>manauto %&gt;% 
+  group_by(ROI) %&gt;% 
+  select(Auto:Manual) %&gt;% 
+  nest() %&gt;% 
+  mutate(R = map_dbl(data, ~cor(.x$Auto, .x$Manual) ) ) %&gt;% 
+  select(ROI, R) %&gt;% 
+  kable(digits=2)</code></pre>
+<pre><code>## Adding missing grouping variables: `ROI`</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">ROI</th>
+<th align="right">R</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">DLPFC</td>
+<td align="right">0.71</td>
+</tr>
+<tr class="even">
+<td align="left">STR</td>
+<td align="right">0.92</td>
+</tr>
+</tbody>
+</table>
+<p>There seems to be a pretty good correspondence between the two, and we can assess whether there is a difference in bias between patients and controls.</p>
+<div id="comparing-bias-between-patients-and-controls" class="section level2">
+<h2>Comparing bias between Patients and controls</h2>
+<pre class="r"><code>manauto_check &lt;- left_join(manauto, demographics)</code></pre>
+<pre><code>## Joining, by = &quot;Subjname&quot;</code></pre>
+<pre class="r"><code>ggplot(manauto_check, aes(x=CtrPat, y=Bias)) +
+  geom_violin(alpha=0.25, aes(colour=factor(CtrPat), fill=factor(CtrPat))) +
+  geom_point(aes(colour=factor(CtrPat), fill=factor(CtrPat))) +
+  facet_grid(ROI~., scales=&#39;free_y&#39;) +
+  scale_colour_discrete(&#39;ROI Delineation Bias&#39;) +
+  scale_fill_discrete(&#39;ROI Delineation Bias&#39;) +
+  labs(x=&#39;ROI Delineation&#39;, y=&#39;Bias&#39;)</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_rois_patcntrl-1.png" width="4200" /></p>
+<pre class="r"><code>manauto_check %&gt;% 
+   group_by(ROI) %&gt;%
+   nest() %&gt;% 
+   mutate(comparison = map(data, ~t_test(df=.x, IV=&#39;CtrPat&#39;, DV=&#39;Bias&#39;) ) ) %&gt;% 
+   select(ROI, comparison) %&gt;% 
+   unnest() %&gt;% 
+   kable(digits=3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">ROI</th>
+<th align="right">estimate</th>
+<th align="right">estimate1</th>
+<th align="right">estimate2</th>
+<th align="right">statistic</th>
+<th align="right">parameter</th>
+<th align="right">p.value</th>
+<th align="left">method</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">DLPFC</td>
+<td align="right">0.082</td>
+<td align="right">1.066</td>
+<td align="right">0.984</td>
+<td align="right">1.086</td>
+<td align="right">29.663</td>
+<td align="right">0.286</td>
+<td align="left">Welch Two Sample t-test</td>
+</tr>
+<tr class="even">
+<td align="left">STR</td>
+<td align="right">-0.016</td>
+<td align="right">1.002</td>
+<td align="right">1.018</td>
+<td align="right">-0.657</td>
+<td align="right">24.021</td>
+<td align="right">0.518</td>
+<td align="left">Welch Two Sample t-test</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>manauto_check %&gt;% 
+   group_by(ROI) %&gt;%
+   nest() %&gt;% 
+   mutate(comparison = map(data, ~tost_test(df=.x, IV=&#39;CtrPat&#39;, DV=&#39;Bias&#39;) ) ) %&gt;% 
+   select(ROI, comparison) %&gt;% 
+   unnest() %&gt;% 
+   kable(digits=3)</code></pre>
+<pre><code>## </code></pre>
+<pre><code>## </code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_rois_patcntrl-2.png" width="4200" /></p>
+<pre><code>## </code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_rois_patcntrl-3.png" width="4200" /></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">ROI</th>
+<th align="right">diff</th>
+<th align="right">tost_p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">DLPFC</td>
+<td align="right">0.082</td>
+<td align="right">0.051</td>
+</tr>
+<tr class="even">
+<td align="left">STR</td>
+<td align="right">-0.016</td>
+<td align="right">0.026</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+<div id="considerations-prior-to-analysis" class="section level1">
+<h1>Considerations prior to analysis</h1>
+<div id="sex-1" class="section level2">
+<h2>Sex</h2>
+<p>We observed differences with both of the biological factors, age and sex, as well as an age <span class="math inline">\(\times\)</span> sex interaction effect. This is concerning, as correcting for this means that there will already be three predictors in the model prior even to the introduction of patient-control status. This deserves further consideration.</p>
+<p>While the influence of age on SCH23390 BP<sub>ND</sub> is well-known, the influence of age, and especially of an age <span class="math inline">\(\times\)</span> sex interaction is less clear from the literature. It is entirely possible that there are no specific sex effects or age <span class="math inline">\(\times\)</span> sex effects, and that we are simply overfitting. In order to investigate this, we examined two other datasets which specifically examined the influence of age on D1R BP<sub>ND</sub> using both men and women.</p>
+<div id="karolinska-dopamine-database" class="section level3">
+<h3>Karolinska Dopamine Database</h3>
+<pre class="r"><code>dadat &lt;- read_excel(&quot;C:/Users/gramat1.KIPET/Dropbox/KAROLINSKA BEHAVIORAL PET DATABASE SHARED/KarolinskaBehaviouralPETDatabase_MASTERFILES/D1_BP/D1_BP_freesurfer_MASTERFILE_no_ID_info_17April2013.xlsx&quot;) %&gt;% 
+  rename(Sex=Sex, Striatum=FSLSSTR, FC = FSLSFC)</code></pre>
+<pre><code>## Warning in read_fun(path = path, sheet_i = sheet, limits = limits, shim =
+## shim, : Expecting numeric in AM113 / R113C39: got a date</code></pre>
+<pre class="r"><code>ba_agesexdat &lt;- dadat %&gt;% 
+  filter(Study_nickname == &#39;Bäckman Aging&#39;) %&gt;% 
+  mutate(Sex = ifelse(Sex==&quot;male&quot;, &quot;Male&quot;, &quot;Female&quot;)) %&gt;% 
+  select(Age, Sex, Striatum, FC) %&gt;% 
+  gather(ROI, bp, -Age, -Sex)
+
+ba_agesexdat %&gt;% 
+  ggplot(aes(x=Age, y=bp, colour=Sex)) +
+    geom_point() +
+    geom_smooth(method=&quot;lm&quot;) +
+    facet_grid(ROI~., scales=&#39;free_y&#39;) +
+    labs(y=expression(BP[ND]))</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_agesex_dadb-1.png" width="4200" /></p>
+<pre class="r"><code>ba_dat &lt;- dadat %&gt;% 
+  filter(Study_nickname == &#39;Bäckman Aging&#39;)
+
+psych::describe(ba_dat$Age)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["vars"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["n"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["sd"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["median"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["trimmed"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["mad"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["min"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["max"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["range"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["skew"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["kurtosis"],"name":[12],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[13],"type":["dbl"],"align":["right"]}],"data":[{"1":"1","2":"40","3":"48.14852","4":"22.77506","5":"47.67272","6":"47.90478","7":"32.84111","8":"22.55479","9":"76.47808","10":"53.92329","11":"0.01815682","12":"-1.9926","13":"3.601053","_rn_":"X1"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code>table(ba_dat$Sex)</code></pre>
+<pre><code>## 
+## female   male 
+##     20     20</code></pre>
+<pre class="r"><code>summary(lm(FC  ~ Age + Sex, data=ba_dat))</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = FC ~ Age + Sex, data = ba_dat)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.16951 -0.05849 -0.00846  0.03580  0.32299 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  0.3446893  0.0394287   8.742 1.57e-10 ***
+## Age         -0.0027228  0.0006792  -4.009 0.000284 ***
+## Sexmale     -0.0198029  0.0305480  -0.648 0.520824    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.09658 on 37 degrees of freedom
+## Multiple R-squared:  0.3071, Adjusted R-squared:  0.2697 
+## F-statistic:   8.2 on 2 and 37 DF,  p-value: 0.001128</code></pre>
+<pre class="r"><code>kable(tidy(lm(FC  ~ Age + Sex, data=ba_dat)), digits=3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">term</th>
+<th align="right">estimate</th>
+<th align="right">std.error</th>
+<th align="right">statistic</th>
+<th align="right">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">(Intercept)</td>
+<td align="right">0.345</td>
+<td align="right">0.039</td>
+<td align="right">8.742</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">Age</td>
+<td align="right">-0.003</td>
+<td align="right">0.001</td>
+<td align="right">-4.009</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">Sexmale</td>
+<td align="right">-0.020</td>
+<td align="right">0.031</td>
+<td align="right">-0.648</td>
+<td align="right">0.521</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>summary(lm(FC  ~ Age + Sex + Age:Sex, data=ba_dat))</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = FC ~ Age + Sex + Age:Sex, data = ba_dat)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.178214 -0.064054 -0.006691  0.045354  0.312067 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  0.3243756  0.0511424   6.343 2.43e-07 ***
+## Age         -0.0023046  0.0009528  -2.419   0.0208 *  
+## Sexmale      0.0218405  0.0727958   0.300   0.7659    
+## Age:Sexmale -0.0008651  0.0013703  -0.631   0.5318    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.09738 on 36 degrees of freedom
+## Multiple R-squared:  0.3147, Adjusted R-squared:  0.2576 
+## F-statistic: 5.511 on 3 and 36 DF,  p-value: 0.003212</code></pre>
+<pre class="r"><code>kable(tidy(lm(FC  ~ Age + Sex + Age:Sex, data=ba_dat)), digits=3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">term</th>
+<th align="right">estimate</th>
+<th align="right">std.error</th>
+<th align="right">statistic</th>
+<th align="right">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">(Intercept)</td>
+<td align="right">0.324</td>
+<td align="right">0.051</td>
+<td align="right">6.343</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">Age</td>
+<td align="right">-0.002</td>
+<td align="right">0.001</td>
+<td align="right">-2.419</td>
+<td align="right">0.021</td>
+</tr>
+<tr class="odd">
+<td align="left">Sexmale</td>
+<td align="right">0.022</td>
+<td align="right">0.073</td>
+<td align="right">0.300</td>
+<td align="right">0.766</td>
+</tr>
+<tr class="even">
+<td align="left">Age:Sexmale</td>
+<td align="right">-0.001</td>
+<td align="right">0.001</td>
+<td align="right">-0.631</td>
+<td align="right">0.532</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>summary(lm(Striatum  ~ Age + Sex, data=ba_dat))</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = Striatum ~ Age + Sex, data = ba_dat)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.56549 -0.15236  0.00816  0.15751  0.72767 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  1.514543   0.107821  14.047  &lt; 2e-16 ***
+## Age         -0.007691   0.001857  -4.141 0.000192 ***
+## Sexmale     -0.007245   0.083536  -0.087 0.931355    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.2641 on 37 degrees of freedom
+## Multiple R-squared:  0.3167, Adjusted R-squared:  0.2798 
+## F-statistic: 8.574 on 2 and 37 DF,  p-value: 0.0008716</code></pre>
+<pre class="r"><code>kable(tidy(lm(Striatum  ~ Age + Sex, data=ba_dat)), digits=3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">term</th>
+<th align="right">estimate</th>
+<th align="right">std.error</th>
+<th align="right">statistic</th>
+<th align="right">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">(Intercept)</td>
+<td align="right">1.515</td>
+<td align="right">0.108</td>
+<td align="right">14.047</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">Age</td>
+<td align="right">-0.008</td>
+<td align="right">0.002</td>
+<td align="right">-4.141</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">Sexmale</td>
+<td align="right">-0.007</td>
+<td align="right">0.084</td>
+<td align="right">-0.087</td>
+<td align="right">0.931</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>summary(lm(Striatum  ~ Age + Sex + Age:Sex, data=ba_dat))</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = Striatum ~ Age + Sex + Age:Sex, data = ba_dat)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.57397 -0.14417 -0.00052  0.14966  0.71826 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  1.4970535  0.1405491  10.651 1.12e-12 ***
+## Age         -0.0073312  0.0026184  -2.800  0.00817 ** 
+## Sexmale      0.0286084  0.2000566   0.143  0.88709    
+## Age:Sexmale -0.0007449  0.0037659  -0.198  0.84432    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.2676 on 36 degrees of freedom
+## Multiple R-squared:  0.3174, Adjusted R-squared:  0.2606 
+## F-statistic: 5.581 on 3 and 36 DF,  p-value: 0.003</code></pre>
+<pre class="r"><code>kable(tidy(lm(Striatum  ~ Age + Sex + Age:Sex, data=ba_dat)), digits=3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">term</th>
+<th align="right">estimate</th>
+<th align="right">std.error</th>
+<th align="right">statistic</th>
+<th align="right">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">(Intercept)</td>
+<td align="right">1.497</td>
+<td align="right">0.141</td>
+<td align="right">10.651</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">Age</td>
+<td align="right">-0.007</td>
+<td align="right">0.003</td>
+<td align="right">-2.800</td>
+<td align="right">0.008</td>
+</tr>
+<tr class="odd">
+<td align="left">Sexmale</td>
+<td align="right">0.029</td>
+<td align="right">0.200</td>
+<td align="right">0.143</td>
+<td align="right">0.887</td>
+</tr>
+<tr class="even">
+<td align="left">Age:Sexmale</td>
+<td align="right">-0.001</td>
+<td align="right">0.004</td>
+<td align="right">-0.198</td>
+<td align="right">0.844</td>
+</tr>
+</tbody>
+</table>
+<p>In this sample, there are no significant sex or age <span class="math inline">\(\times\)</span> sex effects, despite the larger sample size (n=40), and larger age range (23-76), and the fact that there are 20 males and 20 females.</p>
+</div>
+<div id="de-boer-et-al.-2017" class="section level3">
+<h3>de Boer et al. (2017)</h3>
+<p>From correspondence with the authors, they provided us with the sex of all individuals, and BP<sub>ND</sub> estimates were available from their paper for Caudate and DLPFC.</p>
+<pre class="r"><code>deBoerdat &lt;- read.csv(&quot;deBoer_data/elife-26424-fig1-figsupp1-data1-v2.csv&quot;, sep = &#39; &#39;) %&gt;% 
+  mutate(subject = stringr::str_replace_all(subject, &quot;&#39;&quot;, &quot;&quot;))
+
+deBoer_sexdat &lt;- read.csv(&#39;deBoer_data/subjsx.csv&#39;, sep = &#39;;&#39;) %&gt;% 
+  mutate(Sex = ifelse(sex==&quot;M&quot;, &quot;Male&quot;, &quot;Female&quot;)) %&gt;% 
+  select(-sex)
+
+deBoerdat &lt;- left_join(deBoerdat, deBoer_sexdat) %&gt;% 
+  rename(Age=age, DLPFC=dlPFC)</code></pre>
+<pre><code>## Joining, by = &quot;subject&quot;</code></pre>
+<pre><code>## Warning: Column `subject` joining character vector and factor, coercing
+## into character vector</code></pre>
+<pre class="r"><code>db_agesexdat &lt;- deBoerdat %&gt;% 
+  select(Age, Sex, Caudate, DLPFC) %&gt;% 
+  gather(ROI, bp, -Age, -Sex)
+
+db_agesexdat %&gt;% 
+  ggplot(aes(x=Age, y=bp, colour=Sex)) +
+    geom_point() +
+    geom_smooth(method=&quot;lm&quot;) +
+    facet_grid(ROI~., scales=&#39;free_y&#39;) +
+    labs(y=expression(BP[ND]))</code></pre>
+<pre><code>## Warning: Removed 2 rows containing non-finite values (stat_smooth).</code></pre>
+<pre><code>## Warning: Removed 2 rows containing missing values (geom_point).</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/conf_agesex_deboer-1.png" width="4200" /></p>
+<pre class="r"><code>deBoer_age_dlpfc &lt;- lm(DLPFC  ~ Age, data=deBoerdat)
+
+summary(lm(DLPFC  ~ Age, data=deBoerdat))</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = DLPFC ~ Age, data = deBoerdat)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.107302 -0.035635 -0.007857  0.041448  0.117143 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  0.4967460  0.0164382   30.22   &lt;2e-16 ***
+## Age         -0.0038889  0.0003179  -12.23   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.05618 on 54 degrees of freedom
+##   (1 observation deleted due to missingness)
+## Multiple R-squared:  0.7348, Adjusted R-squared:  0.7299 
+## F-statistic: 149.6 on 1 and 54 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>summary(lm(DLPFC  ~ Age + Sex, data=deBoerdat))</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = DLPFC ~ Age + Sex, data = deBoerdat)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.09660 -0.03816 -0.01122  0.04141  0.12513 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  0.5031542  0.0169930  29.610   &lt;2e-16 ***
+## Age         -0.0038056  0.0003215 -11.837   &lt;2e-16 ***
+## SexMale     -0.0204776  0.0151851  -1.349    0.183    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.05576 on 53 degrees of freedom
+##   (1 observation deleted due to missingness)
+## Multiple R-squared:  0.7436, Adjusted R-squared:  0.734 
+## F-statistic: 76.86 on 2 and 53 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>kable(tidy(lm(DLPFC  ~ Age + Sex, data=deBoerdat)), digits=3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">term</th>
+<th align="right">estimate</th>
+<th align="right">std.error</th>
+<th align="right">statistic</th>
+<th align="right">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">(Intercept)</td>
+<td align="right">0.503</td>
+<td align="right">0.017</td>
+<td align="right">29.610</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">Age</td>
+<td align="right">-0.004</td>
+<td align="right">0.000</td>
+<td align="right">-11.837</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">SexMale</td>
+<td align="right">-0.020</td>
+<td align="right">0.015</td>
+<td align="right">-1.349</td>
+<td align="right">0.183</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>summary(lm(DLPFC  ~ Age + Sex + Age:Sex, data=deBoerdat))</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = DLPFC ~ Age + Sex + Age:Sex, data = deBoerdat)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.10445 -0.03279 -0.01032  0.04180  0.13272 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  0.4888148  0.0216670  22.560  &lt; 2e-16 ***
+## Age         -0.0034598  0.0004568  -7.575 6.01e-10 ***
+## SexMale      0.0109385  0.0331791   0.330    0.743    
+## Age:SexMale -0.0006837  0.0006423  -1.065    0.292    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.05569 on 52 degrees of freedom
+##   (1 observation deleted due to missingness)
+## Multiple R-squared:  0.7491, Adjusted R-squared:  0.7346 
+## F-statistic: 51.75 on 3 and 52 DF,  p-value: 1.24e-15</code></pre>
+<pre class="r"><code>kable(tidy(lm(DLPFC  ~ Age + Sex + Age:Sex, data=deBoerdat)), digits=3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">term</th>
+<th align="right">estimate</th>
+<th align="right">std.error</th>
+<th align="right">statistic</th>
+<th align="right">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">(Intercept)</td>
+<td align="right">0.489</td>
+<td align="right">0.022</td>
+<td align="right">22.560</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">Age</td>
+<td align="right">-0.003</td>
+<td align="right">0.000</td>
+<td align="right">-7.575</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">SexMale</td>
+<td align="right">0.011</td>
+<td align="right">0.033</td>
+<td align="right">0.330</td>
+<td align="right">0.743</td>
+</tr>
+<tr class="even">
+<td align="left">Age:SexMale</td>
+<td align="right">-0.001</td>
+<td align="right">0.001</td>
+<td align="right">-1.065</td>
+<td align="right">0.292</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>deBoer_age_str &lt;- lm(Caudate  ~ Age, data=deBoerdat)
+
+summary(lm(Caudate  ~ Age, data=deBoerdat))</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = Caudate ~ Age, data = deBoerdat)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.40939 -0.13760 -0.03255  0.13023  0.43533 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  2.178641   0.053418   40.78   &lt;2e-16 ***
+## Age         -0.014103   0.001033  -13.65   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.1826 on 54 degrees of freedom
+##   (1 observation deleted due to missingness)
+## Multiple R-squared:  0.7753, Adjusted R-squared:  0.7712 
+## F-statistic: 186.4 on 1 and 54 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>summary(lm(Caudate  ~ Age + Sex, data=deBoerdat))</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = Caudate ~ Age + Sex, data = deBoerdat)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.44827 -0.12406 -0.00763  0.12098  0.47055 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  2.20688    0.05442  40.553   &lt;2e-16 ***
+## Age         -0.01374    0.00103 -13.341   &lt;2e-16 ***
+## SexMale     -0.09025    0.04863  -1.856    0.069 .  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.1786 on 53 degrees of freedom
+##   (1 observation deleted due to missingness)
+## Multiple R-squared:  0.789,  Adjusted R-squared:  0.7811 
+## F-statistic: 99.12 on 2 and 53 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>kable(tidy(lm(Caudate  ~ Age + Sex, data=deBoerdat)), digits=3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">term</th>
+<th align="right">estimate</th>
+<th align="right">std.error</th>
+<th align="right">statistic</th>
+<th align="right">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">(Intercept)</td>
+<td align="right">2.207</td>
+<td align="right">0.054</td>
+<td align="right">40.553</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">Age</td>
+<td align="right">-0.014</td>
+<td align="right">0.001</td>
+<td align="right">-13.341</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">SexMale</td>
+<td align="right">-0.090</td>
+<td align="right">0.049</td>
+<td align="right">-1.856</td>
+<td align="right">0.069</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>summary(lm(Caudate  ~ Age + Sex + Age:Sex, data=deBoerdat))</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = Caudate ~ Age + Sex + Age:Sex, data = deBoerdat)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.44747 -0.12274 -0.00917  0.12125  0.47196 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  2.2042134  0.0701384  31.427  &lt; 2e-16 ***
+## Age         -0.0136718  0.0014786  -9.246 1.45e-12 ***
+## SexMale     -0.0843997  0.1074040  -0.786    0.436    
+## Age:SexMale -0.0001273  0.0020790  -0.061    0.951    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.1803 on 52 degrees of freedom
+##   (1 observation deleted due to missingness)
+## Multiple R-squared:  0.7891, Adjusted R-squared:  0.7769 
+## F-statistic: 64.84 on 3 and 52 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>kable(tidy(lm(Caudate  ~ Age + Sex + Age:Sex, data=deBoerdat)), digits=3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">term</th>
+<th align="right">estimate</th>
+<th align="right">std.error</th>
+<th align="right">statistic</th>
+<th align="right">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">(Intercept)</td>
+<td align="right">2.204</td>
+<td align="right">0.070</td>
+<td align="right">31.427</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">Age</td>
+<td align="right">-0.014</td>
+<td align="right">0.001</td>
+<td align="right">-9.246</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">SexMale</td>
+<td align="right">-0.084</td>
+<td align="right">0.107</td>
+<td align="right">-0.786</td>
+<td align="right">0.436</td>
+</tr>
+<tr class="even">
+<td align="left">Age:SexMale</td>
+<td align="right">0.000</td>
+<td align="right">0.002</td>
+<td align="right">-0.061</td>
+<td align="right">0.951</td>
+</tr>
+</tbody>
+</table>
+<p>Analysis of this dataset showed a similar pattern: despite a larger age range (19-75), a better proportional representation of women, and a larger sample size (n=56), there was no significant effect of either sex, or an interaction between age and sex. Sex was bordering on significance for the striatum, but this is in the opposite direction to that observed in our data, namely than men show decreases.</p>
+</div>
+</div>
+<div id="age" class="section level2">
+<h2>Age</h2>
+<p>The effects of age on SCH23390 BP<sub>ND</sub> values has been studied extensively. We can therefore define an informative prior over this effect. For more detailed information, see Matheson et al (2018) (<a href="https://www.biorxiv.org/content/10.1101/321646v1" class="uri">https://www.biorxiv.org/content/10.1101/321646v1</a>). We have also included results from de Boer et al., (2017).</p>
+<div id="dlpfc" class="section level3">
+<h3>DLPFC</h3>
+<ul>
+<li>Wang 1998: OCC - 8% per decade (n=18)</li>
+<li>Jucaite 2010: DLPFC - 15.5% per decade (n=30)
+<ul>
+<li>This estimate comes from estimation of the nonlinear curve for the youngest and oldest age in our sample, and calculating the average decrease as if it were linear over this period.</li>
+</ul></li>
+<li>Backman 2011: DLPFC - 24% per decade (n=40)</li>
+<li>de Boer 2017: DLPFC - 12.2% per decade (n=56)
+<ul>
+<li>This estimate comes from linear model performed before, relative to the predicted BP<sub>ND</sub> for the maximum age</li>
+</ul></li>
+</ul>
+<pre class="r"><code>maxage &lt;- max(bp_data$Age)
+minage &lt;- min(bp_data$Age)
+midage &lt;- mean(c(maxage, minage))
+elapsed_years &lt;- maxage-minage
+
+jucaite_dlpfc_max &lt;- 0.62*exp((-0.03)*minage)
+jucaite_dlpfc_min &lt;- 0.62*exp((-0.03)*maxage)
+jucaite_dlpfc_mid &lt;- 0.62*exp((-0.03)*midage)
+(jucaite_dlpfc_change &lt;- 10*( ((jucaite_dlpfc_max-jucaite_dlpfc_min)/0.42) / elapsed_years) )  # 0.42 is the mean</code></pre>
+<pre><code>## [1] 0.1609951</code></pre>
+<pre class="r"><code>maxage &lt;- max(deBoerdat$Age)
+minage &lt;- min(deBoerdat$Age)
+
+( deBoer_dlpfc_change &lt;- 10*(coef(deBoer_age_dlpfc)[2]/ mean(deBoerdat$DLPFC, na.rm = T) ) )</code></pre>
+<pre><code>##        Age 
+## -0.1223471</code></pre>
+<pre class="r"><code>dlpfcdecadevals &lt;- c(-0.08, -0.155, -0.24, -0.122)
+dlpfcyearvals &lt;- dlpfcdecadevals/10
+kable(psych::describe(dlpfcyearvals), digits = 3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">vars</th>
+<th align="right">n</th>
+<th align="right">mean</th>
+<th align="right">sd</th>
+<th align="right">median</th>
+<th align="right">trimmed</th>
+<th align="right">mad</th>
+<th align="right">min</th>
+<th align="right">max</th>
+<th align="right">range</th>
+<th align="right">skew</th>
+<th align="right">kurtosis</th>
+<th align="right">se</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X1</td>
+<td align="right">1</td>
+<td align="right">4</td>
+<td align="right">-0.015</td>
+<td align="right">0.007</td>
+<td align="right">-0.014</td>
+<td align="right">-0.015</td>
+<td align="right">0.006</td>
+<td align="right">-0.024</td>
+<td align="right">-0.008</td>
+<td align="right">0.016</td>
+<td align="right">-0.316</td>
+<td align="right">-1.921</td>
+<td align="right">0.003</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>age_n &lt;- c(19, 30, 40, 56)
+(dlpfc_age_weightedmean &lt;- Hmisc::wtd.mean(dlpfcyearvals, age_n))</code></pre>
+<pre><code>## [1] -0.01558759</code></pre>
+<pre class="r"><code>(dlpfc_age_weightedsd &lt;- sqrt(Hmisc::wtd.var(dlpfcyearvals, age_n)))</code></pre>
+<pre><code>## [1] 0.005631926</code></pre>
+</div>
+<div id="striatum" class="section level3">
+<h3>Striatum</h3>
+<ul>
+<li>Wang 1998: Caudate - 6.9% per decade</li>
+<li>Jucaite 2010: Caudate - 7.7% per decade</li>
+<li>Backman 2011: Caudate - 8% per decade</li>
+<li>de Boer 2017: Caudate - 7.4% per decade (n=56)</li>
+</ul>
+<pre class="r"><code>maxage &lt;- max(bp_data$Age)
+minage &lt;- min(bp_data$Age)
+elapsed_years &lt;- maxage-minage
+
+jucaite_str_max &lt;- 1.90*exp((-0.009)*minage)
+jucaite_str_min &lt;- 1.90*exp((-0.009)*maxage)
+(jucaite_str_change &lt;- 10*( ((jucaite_str_max-jucaite_str_min)/jucaite_str_max) / elapsed_years) )</code></pre>
+<pre><code>## [1] 0.07783468</code></pre>
+<pre class="r"><code>maxage &lt;- mean(deBoerdat$Age)
+minage &lt;- min(deBoerdat$Age)
+
+deBoer_str_max &lt;- as.numeric(predict(deBoer_age_str, newdata = list(Age=minage)))
+( deBoer_str_change &lt;- 10*(coef(deBoer_age_str)[2]/deBoer_str_max) )</code></pre>
+<pre><code>##         Age 
+## -0.07381207</code></pre>
+<pre class="r"><code>strdecadevals &lt;- c(-0.069 , -0.077 , -0.08, -0.074)
+stryearvals &lt;- strdecadevals/10
+kable(psych::describe(stryearvals), digits = 3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">vars</th>
+<th align="right">n</th>
+<th align="right">mean</th>
+<th align="right">sd</th>
+<th align="right">median</th>
+<th align="right">trimmed</th>
+<th align="right">mad</th>
+<th align="right">min</th>
+<th align="right">max</th>
+<th align="right">range</th>
+<th align="right">skew</th>
+<th align="right">kurtosis</th>
+<th align="right">se</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X1</td>
+<td align="right">1</td>
+<td align="right">4</td>
+<td align="right">-0.008</td>
+<td align="right">0</td>
+<td align="right">-0.008</td>
+<td align="right">-0.008</td>
+<td align="right">0</td>
+<td align="right">-0.008</td>
+<td align="right">-0.007</td>
+<td align="right">0.001</td>
+<td align="right">0.204</td>
+<td align="right">-1.999</td>
+<td align="right">0</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>(str_age_weightedmean &lt;- Hmisc::wtd.mean(stryearvals, age_n))</code></pre>
+<pre><code>## [1] -0.007562069</code></pre>
+<pre class="r"><code>(str_age_weightedsd &lt;- sqrt(Hmisc::wtd.var(stryearvals, age_n)))</code></pre>
+<pre><code>## [1] 0.0003539595</code></pre>
+</div>
+<div id="conclusion" class="section level3">
+<h3>Conclusion</h3>
+<p>I conclude that the difference between men and women, as well as the interaction effect between age and sex which we observed in this data, was likely a type I error, and due to overfitting the data. I will therefore only correct for age, and will not correct for sex in the final model.</p>
+</div>
+</div>
+<div id="other-confounders" class="section level2">
+<h2>Other confounders</h2>
+<p>I will run the analysis with and without the two individuals who underwent 3D PET and examine whether the effect size is altered. These two values did not appear to be outliers, though they did appear to be low. The other effects did not appear to greatly influence the results.</p>
+</div>
+</div>
+<div id="modelling-the-difference" class="section level1">
+<h1>Modelling the difference</h1>
+<div id="bayesian-approach" class="section level2">
+<h2>Bayesian approach</h2>
+<p>First I will use a Bayesian approach. This means that we can use priors to constrain the fitting of the association between BP<sub>ND</sub> and age to what we can expect from the literature.</p>
+<div id="age-1" class="section level3">
+<h3>Age</h3>
+<p>For the effects of age, I will make use of the prior defined above. This will be an informative prior, centred at the mean.</p>
+</div>
+<div id="patient-control-status" class="section level3">
+<h3>Patient-control status</h3>
+<p>For the effects of patient-control status on BP<sub>ND</sub>, I will make use of a zero-centred regularising prior.</p>
+<div id="dlpfc-1" class="section level4">
+<h4>DLPFC</h4>
+<ul>
+<li>Increase hypothesis: Poels et al. showed a 35% increase in patients compared to controls.</li>
+<li>Decrease hypothesis: Kosaka et al. showed a 27% reduction in patients compared to controls.</li>
+</ul>
+</div>
+<div id="striatum-1" class="section level4">
+<h4>Striatum</h4>
+<ul>
+<li>Increase hypothesis: Poels et al. did not show a difference between patients and controls.</li>
+<li>Decrease hypothesis: Kosaka et al. showed a 20.9% reduction in patients compared to controls.</li>
+</ul>
+</div>
+<div id="summary" class="section level4">
+<h4>Summary</h4>
+<p>In order to treat each hypothesis as equally plausible in either direction, I will define a symmetrical prior around zero with these two effects as the scale, namely 31% for DLPFC, and 21% for the Striatum. We can then calculate Bayes Factors for the relative plausibility of these two effects. I will also perform parameter estimation using this effect size as a bilateral prior.</p>
+</div>
+</div>
+<div id="dlpfc-model" class="section level3">
+<h3>DLPFC Model</h3>
+<p>First we define the input data</p>
+<pre class="r"><code>dlpfc_testdata &lt;- bp_data %&gt;% 
+  filter(ROI==&#39;DLPFC&#39;)
+
+dlpfc_effectpriorwidth &lt;- dlpfc_testdata %&gt;%
+  filter(CtrPat==&#39;ctr&#39;) %&gt;% 
+  pull(bp) %&gt;% 
+  mean(.) * 0.29
+
+dlpfc_data &lt;- list(bp = dlpfc_testdata$bp, 
+                   CtrPat = ifelse(dlpfc_testdata$CtrPat==&#39;ctr&#39;, 0, 1),
+                   Age = dlpfc_testdata$Age,
+                   n = nrow(dlpfc_testdata),
+                   beta3mean = 0,
+                   beta3sd = dlpfc_effectpriorwidth,
+                   beta2mean = dlpfc_age_weightedmean*mean(dlpfc_testdata$bp),
+                   beta2sd = dlpfc_age_weightedsd*mean(dlpfc_testdata$bp) )
+
+parameters = c(&#39;mu&#39;, &#39;sigma&#39;, &#39;beta1&#39;, &#39;beta2&#39;, &#39;beta3&#39;)</code></pre>
+<p>Now we set up the initial parameters and run the model.</p>
+<pre class="r"><code># Increase
+
+myinits &lt;- list(
+  list(beta1 = runif(1,-5,5),
+       beta2 = rnorm(1,dlpfc_data$beta2mean, 1 / dlpfc_data$beta2sd^2),
+       beta3 = abs(rnorm(1,dlpfc_data$beta3mean, 1 / dlpfc_data$beta3sd^2)),
+       sigma = runif(1,0,100)),
+  list(beta1 = runif(1,-5,5),
+       beta2 = rnorm(1,dlpfc_data$beta2mean, 1 / dlpfc_data$beta2sd^2),
+       beta3 = abs(rnorm(1,dlpfc_data$beta3mean, 1 / dlpfc_data$beta3sd^2)),
+       sigma = runif(1,0,100)),
+  list(beta1 = runif(1,-5,5),
+       beta2 = rnorm(1,dlpfc_data$beta2mean, 1 / dlpfc_data$beta2sd^2),
+       beta3 = abs(rnorm(1,dlpfc_data$beta3mean, 1 / dlpfc_data$beta3sd^2)),
+       sigma = runif(1,0,100)))
+
+DLPFC_increase_modelstring &lt;- &quot;model{
+  
+# Data and Likelihood
+  for(i in 1:n){
+    bp[i] ~ dnorm(mu[i], lambda)
+    mu[i] &lt;- beta1 + beta2*Age[i] + beta3*CtrPat[i]
+  }
+  
+# Prior for betas
+  beta1 ~ dunif( -5 , 5 )
+  beta2 ~ dnorm( beta2mean , pow(beta2sd, -2) )
+  beta3 ~ dnorm( beta3mean , pow(beta3sd, -2))T(0,)
+  
+# Prior for the variance
+  lambda &lt;- pow(sigma, -2)  
+  sigma ~ dunif(0, 100)
+}&quot;
+
+DLPFC_increase_model &lt;- jags(dlpfc_data, inits = myinits, parameters.to.save = parameters,
+                 model.file=textConnection(DLPFC_increase_modelstring), n.chains=3, n.iter=50000, 
+         n.burnin=500, n.thin=2)</code></pre>
+<pre><code>## module glm loaded</code></pre>
+<pre><code>## Compiling model graph
+##    Resolving undeclared variables
+##    Allocating nodes
+## Graph information:
+##    Observed stochastic nodes: 35
+##    Unobserved stochastic nodes: 4
+##    Total graph size: 199
+## 
+## Initializing model</code></pre>
+<p>And now the decrease model:</p>
+<pre class="r"><code># Decrease
+
+myinits &lt;- list(
+  list(beta1 = runif(1,-5,5),
+       beta2 = rnorm(1,dlpfc_data$beta2mean, 1 / dlpfc_data$beta2sd^2),
+       beta3 = -abs(rnorm(1,dlpfc_data$beta3mean, 1 / dlpfc_data$beta3sd^2)),
+       sigma = runif(1,0,100)),
+  list(beta1 = runif(1,-5,5),
+       beta2 = rnorm(1,dlpfc_data$beta2mean, 1 / dlpfc_data$beta2sd^2),
+       beta3 = -abs(rnorm(1,dlpfc_data$beta3mean, 1 / dlpfc_data$beta3sd^2)),
+       sigma = runif(1,0,100)),
+  list(beta1 = runif(1,-5,5),
+       beta2 = rnorm(1,dlpfc_data$beta2mean, 1 / dlpfc_data$beta2sd^2),
+       beta3 = -abs(rnorm(1,dlpfc_data$beta3mean, 1 / dlpfc_data$beta3sd^2)),
+       sigma = runif(1,0,100)))
+
+DLPFC_decrease_modelstring &lt;- &quot;model{
+  
+# Data and Likelihood
+  for(i in 1:n){
+    bp[i] ~ dnorm(mu[i], lambda)
+    mu[i] &lt;- beta1 + beta2*Age[i] + beta3*CtrPat[i]
+  }
+  
+# Prior for betas
+  beta1 ~ dunif( -5 , 5 )
+  beta2 ~ dnorm( beta2mean , pow(beta2sd, -2) )
+  beta3 ~ dnorm( beta3mean , pow(beta3sd, -2))T(,0)
+  
+# Prior for the variance
+  lambda &lt;- pow(sigma, -2)  
+  sigma ~ dunif(0, 100)
+}&quot;
+
+DLPFC_decrease_model &lt;- jags(dlpfc_data, inits = myinits, parameters.to.save = parameters,
+                 model.file=textConnection(DLPFC_decrease_modelstring), n.chains=3, n.iter=50000, 
+         n.burnin=500, n.thin=2)</code></pre>
+<pre><code>## Compiling model graph
+##    Resolving undeclared variables
+##    Allocating nodes
+## Graph information:
+##    Observed stochastic nodes: 35
+##    Unobserved stochastic nodes: 4
+##    Total graph size: 199
+## 
+## Initializing model</code></pre>
+<p>We’ll define functions for plotting the distributions, and for calculating Bayes Factors:</p>
+<pre class="r"><code>distroplot_norm &lt;- function(fitobject, variable.name, priormean, priorsd, nbin=50) {
+  
+  # fitobject &lt;- DLPFC_parest_model
+  
+  samples &lt;- tibble(Posterior = as.numeric(fitobject$BUGSoutput$sims.list[[variable.name]]))
+  
+  parameters &lt;- fitobject$model$data()
+  
+  priormean_val &lt;- ifelse(is.character(priormean), parameters[[priormean]], priormean)
+  priorsd_val &lt;- ifelse(is.character(priorsd), parameters[[priorsd]], priorsd)
+  
+  out &lt;- ggplot(samples, aes(x=Posterior)) +
+    geom_histogram(aes(y = ..density.., colour=&quot;Posterior&quot;), bins=nbin, fill=&quot;white&quot;) +
+    stat_function(fun = dnorm, args = list(mean = priormean_val, sd=priorsd_val), aes(colour=&#39;Prior&#39;), size=2) +
+    stat_function(fun = dnorm, args = list(mean = priormean_val, sd=priorsd_val), color=&quot;white&quot;, size=1) +
+    geom_line(aes(y = ..density.., colour=&quot;Posterior&quot;), size=2, stat=&quot;density&quot;) +
+    geom_line(aes(y = ..density..), colour=&quot;white&quot;, size=1, stat=&quot;density&quot;) +
+    geom_vline(xintercept=mean(samples$Posterior), linetype = &quot;dashed&quot;, size=1) +
+    scale_colour_viridis(begin=0,direction=1, end=0.66, discrete=T, &#39;Distribution&#39;) + 
+    expand_limits(x=c(priormean_val - priorsd_val, priormean_val + priorsd_val)) +
+    labs(y=&#39;Probability Density&#39;, x=&#39;Parameter Value&#39;)
+  
+  return(out)
+  
+}
+
+calcBF &lt;- function(fit, parname, ubound, lbound, priorwidth) {
+  fit.posterior &lt;- logspline(fit$BUGSoutput$sims.list[[parname]], ubound=ubound, lbound=lbound)
+
+  posterior &lt;- dlogspline(0, fit.posterior) # this gives the pdf at point delta = 0
+  prior     &lt;- 2*dnorm(0,0,priorwidth)
+  BF10      &lt;- prior / posterior
+  return(BF10)
+}
+
+bf_incr_decr_table &lt;- function(incr_bf, decr_bf) {
+  
+  outcomes &lt;- list(Increase = incr_bf, Decrease = decr_bf, Null=1)
+  
+  outcome_compare &lt;- tibble::as_tibble(expand.grid(Model = c(&quot;Increase&quot;, &quot;Decrease&quot;, &quot;Null&quot;), 
+                                                   ModelAgainst = c(&quot;Increase&quot;, &quot;Decrease&quot;, &quot;Null&quot;))) %&gt;% 
+    mutate(BF = 1)
+  
+  for(i in 1:nrow(outcome_compare)) {
+    outcome_compare$BF[i] &lt;- outcomes[[outcome_compare$Model[i]]] / outcomes[[outcome_compare$ModelAgainst[i]]]
+  }
+  
+  outcome_compare %&gt;% 
+    spread(ModelAgainst, BF) %&gt;%
+    mutate_if(is.numeric, funs(round(.,2)))
+  
+}</code></pre>
+<p>Now we’ll actually calculate the Bayes Factors</p>
+<pre class="r"><code>(dlpfc_decr_bf &lt;- calcBF(DLPFC_decrease_model, &#39;beta3&#39;, ubound = 0, priorwidth = abs(dlpfc_data$beta3sd)))</code></pre>
+<pre><code>## [1] 4.112409</code></pre>
+<pre class="r"><code>(dlpfc_incr_bf &lt;- calcBF(DLPFC_increase_model, &#39;beta3&#39;, lbound = 0, priorwidth = abs(dlpfc_data$beta3sd)))</code></pre>
+<pre><code>## [1] 0.06602117</code></pre>
+<pre class="r"><code>kable(bf_incr_decr_table(dlpfc_incr_bf, dlpfc_decr_bf))</code></pre>
+<pre><code>## Warning: funs() is soft deprecated as of dplyr 0.8.0
+## please use list() instead
+## 
+## # Before:
+## funs(name = f(.)
+## 
+## # After: 
+## list(name = ~f(.))
+## This warning is displayed once per session.</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Model</th>
+<th align="right">Increase</th>
+<th align="right">Decrease</th>
+<th align="right">Null</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Increase</td>
+<td align="right">1.00</td>
+<td align="right">0.02</td>
+<td align="right">0.07</td>
+</tr>
+<tr class="even">
+<td align="left">Decrease</td>
+<td align="right">62.29</td>
+<td align="right">1.00</td>
+<td align="right">4.11</td>
+</tr>
+<tr class="odd">
+<td align="left">Null</td>
+<td align="right">15.15</td>
+<td align="right">0.24</td>
+<td align="right">1.00</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="str-model" class="section level3">
+<h3>STR Model</h3>
+<p>Now let’s define the data for the striatum</p>
+<pre class="r"><code>str_testdata &lt;- bp_data %&gt;% 
+  filter(ROI==&#39;STR&#39;)
+
+str_effectpriorwidth &lt;- str_testdata %&gt;%
+  filter(CtrPat==&#39;ctr&#39;) %&gt;% 
+  pull(bp) %&gt;% 
+  mean(.) * 0.21
+
+
+
+str_data &lt;- list(bp = str_testdata$bp, 
+                   CtrPat = ifelse(str_testdata$CtrPat==&#39;ctr&#39;, 0, 1),
+                   Age = str_testdata$Age,
+                   n = nrow(str_testdata),
+                   beta3mean = 0,
+                   beta3sd = str_effectpriorwidth,
+                   beta2mean = str_age_weightedmean*mean(str_testdata$bp),
+                   beta2sd = str_age_weightedsd*mean(str_testdata$bp) )
+
+parameters = c(&#39;mu&#39;, &#39;sigma&#39;, &#39;beta1&#39;, &#39;beta2&#39;, &#39;beta3&#39;)</code></pre>
+<p>And then fit the increase model</p>
+<pre class="r"><code># Increase
+
+myinits &lt;- list(
+  list(beta1 = runif(1,-5,5),
+       beta2 = rnorm(1,str_data$beta2mean, 1 / str_data$beta2sd^2),
+       beta3 = abs(rnorm(1,str_data$beta3mean, 1 / str_data$beta3sd^2)),
+       sigma = runif(1,0,100)),
+  list(beta1 = runif(1,-5,5),
+       beta2 = rnorm(1,str_data$beta2mean, 1 / str_data$beta2sd^2),
+       beta3 = abs(rnorm(1,str_data$beta3mean, 1 / str_data$beta3sd^2)),
+       sigma = runif(1,0,100)),
+  list(beta1 = runif(1,-5,5),
+       beta2 = rnorm(1,str_data$beta2mean, 1 / str_data$beta2sd^2),
+       beta3 = abs(rnorm(1,str_data$beta3mean, 1 / str_data$beta3sd^2)),
+       sigma = runif(1,0,100)))
+
+str_increase_modelstring &lt;- &quot;model{
+  
+# Data and Likelihood
+  for(i in 1:n){
+    bp[i] ~ dnorm(mu[i], lambda)
+    mu[i] &lt;- beta1 + beta2*Age[i] + beta3*CtrPat[i]
+  }
+  
+# Prior for betas
+  beta1 ~ dunif( -5 , 5 )
+  beta2 ~ dnorm( beta2mean , pow(beta2sd, -2) )
+  beta3 ~ dnorm( beta3mean , pow(beta3sd, -2))T(0,)
+  
+# Prior for the variance
+  lambda &lt;- pow(sigma, -2)  
+  sigma ~ dunif(0, 100)
+}&quot;
+
+str_increase_model &lt;- jags(str_data, inits = myinits, parameters.to.save = parameters,
+                 model.file=textConnection(str_increase_modelstring), n.chains=3, n.iter=50000, 
+         n.burnin=500, n.thin=2)</code></pre>
+<pre><code>## Compiling model graph
+##    Resolving undeclared variables
+##    Allocating nodes
+## Graph information:
+##    Observed stochastic nodes: 35
+##    Unobserved stochastic nodes: 4
+##    Total graph size: 199
+## 
+## Initializing model</code></pre>
+<p>And the decrease model</p>
+<pre class="r"><code># Decrease
+
+myinits &lt;- list(
+  list(beta1 = runif(1,-5,5),
+       beta2 = rnorm(1,str_data$beta2mean, 1 / str_data$beta2sd^2),
+       beta3 = -abs(rnorm(1,str_data$beta3mean, 1 / str_data$beta3sd^2)),
+       sigma = runif(1,0,100)),
+  list(beta1 = runif(1,-5,5),
+       beta2 = rnorm(1,str_data$beta2mean, 1 / str_data$beta2sd^2),
+       beta3 = -abs(rnorm(1,str_data$beta3mean, 1 / str_data$beta3sd^2)),
+       sigma = runif(1,0,100)),
+  list(beta1 = runif(1,-5,5),
+       beta2 = rnorm(1,str_data$beta2mean, 1 / str_data$beta2sd^2),
+       beta3 = -abs(rnorm(1,str_data$beta3mean, 1 / str_data$beta3sd^2)),
+       sigma = runif(1,0,100)))
+
+str_decrease_modelstring &lt;- &quot;model{
+  
+# Data and Likelihood
+  for(i in 1:n){
+    bp[i] ~ dnorm(mu[i], lambda)
+    mu[i] &lt;- beta1 + beta2*Age[i] + beta3*CtrPat[i]
+  }
+  
+# Prior for betas
+  beta1 ~ dunif( -5 , 5 )
+  beta2 ~ dnorm( beta2mean , pow(beta2sd, -2) )
+  beta3 ~ dnorm( beta3mean , pow(beta3sd, -2))T(,0)
+  
+# Prior for the variance
+  lambda &lt;- pow(sigma, -2)  
+  sigma ~ dunif(0, 100)
+}&quot;
+
+str_decrease_model &lt;- jags(str_data, inits = myinits, parameters.to.save = parameters,
+                 model.file=textConnection(str_decrease_modelstring), n.chains=3, n.iter=50000, 
+         n.burnin=500, n.thin=2)</code></pre>
+<pre><code>## Compiling model graph
+##    Resolving undeclared variables
+##    Allocating nodes
+## Graph information:
+##    Observed stochastic nodes: 35
+##    Unobserved stochastic nodes: 4
+##    Total graph size: 199
+## 
+## Initializing model</code></pre>
+<p>And then calculate the Bayes Factors</p>
+<pre class="r"><code>(str_decr_bf &lt;- calcBF(str_decrease_model, &#39;beta3&#39;, ubound = 0, priorwidth = abs(str_data$beta3sd)))</code></pre>
+<pre><code>## [1] 0.3221226</code></pre>
+<pre class="r"><code>(str_incr_bf &lt;- calcBF(str_increase_model, &#39;beta3&#39;, lbound = 0, priorwidth = abs(str_data$beta3sd)))</code></pre>
+<pre><code>## [1] 0.1246301</code></pre>
+<pre class="r"><code>kable(bf_incr_decr_table(str_incr_bf, str_decr_bf))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Model</th>
+<th align="right">Increase</th>
+<th align="right">Decrease</th>
+<th align="right">Null</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Increase</td>
+<td align="right">1.00</td>
+<td align="right">0.39</td>
+<td align="right">0.12</td>
+</tr>
+<tr class="even">
+<td align="left">Decrease</td>
+<td align="right">2.58</td>
+<td align="right">1.00</td>
+<td align="right">0.32</td>
+</tr>
+<tr class="odd">
+<td align="left">Null</td>
+<td align="right">8.02</td>
+<td align="right">3.10</td>
+<td align="right">1.00</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="bf-table" class="section level3">
+<h3>BF Table</h3>
+<pre class="r"><code>library(kableExtra)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;kableExtra&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:dplyr&#39;:
+## 
+##     group_rows</code></pre>
+<pre class="r"><code>bftable &lt;- bind_rows(bf_incr_decr_table(dlpfc_incr_bf, dlpfc_decr_bf),
+                     bf_incr_decr_table(str_incr_bf, str_decr_bf))
+
+saveRDS(bftable, &quot;bftable.rds&quot;)
+
+kable(bftable, caption = &quot;Bayes Factors comparing each hypothesis (rows) against each other hypothesis (columns) for the test of differences in BP~ND~ between psychosis patients and controls.&quot;) %&gt;%
+  #kable_styling(&quot;striped&quot;, full_width = F) %&gt;%
+  group_rows(&quot;DLPFC&quot;, 1, 3) %&gt;%
+  group_rows(&quot;Striatum&quot;, 4, 6)</code></pre>
+<table>
+<caption>
+Bayes Factors comparing each hypothesis (rows) against each other hypothesis (columns) for the test of differences in BP<sub>ND</sub> between psychosis patients and controls.
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Model
+</th>
+<th style="text-align:right;">
+Increase
+</th>
+<th style="text-align:right;">
+Decrease
+</th>
+<th style="text-align:right;">
+Null
+</th>
+</tr>
+</thead>
+<tbody>
+<tr grouplength="3">
+<td colspan="4" style="border-bottom: 1px solid;">
+<strong>DLPFC</strong>
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left: 2em;" indentlevel="1">
+Increase
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+0.02
+</td>
+<td style="text-align:right;">
+0.07
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left: 2em;" indentlevel="1">
+Decrease
+</td>
+<td style="text-align:right;">
+62.29
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+4.11
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left: 2em;" indentlevel="1">
+Null
+</td>
+<td style="text-align:right;">
+15.15
+</td>
+<td style="text-align:right;">
+0.24
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+</tr>
+<tr grouplength="3">
+<td colspan="4" style="border-bottom: 1px solid;">
+<strong>Striatum</strong>
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left: 2em;" indentlevel="1">
+Increase
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+0.39
+</td>
+<td style="text-align:right;">
+0.12
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left: 2em;" indentlevel="1">
+Decrease
+</td>
+<td style="text-align:right;">
+2.58
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+0.32
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left: 2em;" indentlevel="1">
+Null
+</td>
+<td style="text-align:right;">
+8.02
+</td>
+<td style="text-align:right;">
+3.10
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="frequentist-approach" class="section level2">
+<h2>Frequentist Approach</h2>
+<div id="power-analysis" class="section level3">
+<h3>Power Analysis</h3>
+<p>For the sample size which we have (assuming 18 ), we have sufficient power to detect an effect of the following size</p>
+<pre class="r"><code>pwr::pwr.t.test(n=18, power = 0.8, type = &#39;two.sample&#39;)</code></pre>
+<pre><code>## 
+##      Two-sample t test power calculation 
+## 
+##               n = 18
+##               d = 0.9612854
+##       sig.level = 0.05
+##           power = 0.8
+##     alternative = two.sided
+## 
+## NOTE: n is number in *each* group</code></pre>
+<p>An effect size of 0.96 is very large. It can be expressed as follows:</p>
+<pre class="r"><code>relfeas::plot_difference(d=0.96)</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/diffplot-1.png" width="4200" /></p>
+<p>This means that we would expect 83% of the psychosis patients to lie on one side of the healthy control mean. Or, that selecting an individual at random from each group, 75% of the time would yield the outcome which we would observe. What we can say already at this point is that this study is likely underpowered, and that we are likely either to make a Type II error, or a Type M error. As such, we should be careful to overinterpret an insignificant result as suggesting that there is no effect, and should also be careful about interpreting the effect size of a significant effect, as it is likely inflated.</p>
+</div>
+<div id="analysis" class="section level3">
+<h3>Analysis</h3>
+<pre class="r"><code>bp_data_test &lt;- bp_data %&gt;% 
+  group_by(ROI) %&gt;% 
+  mutate(bp.z = as.numeric(scale(bp)),
+         bp.cent = as.numeric(scale(bp, center=T, scale=F)))
+
+dlpfc_test &lt;- bp_data_test %&gt;% 
+  filter(ROI==&#39;DLPFC&#39;) %&gt;% 
+  lm(formula = bp.z ~ Age + CtrPat, data = .)
+
+str_test &lt;- bp_data_test %&gt;% 
+  filter(ROI==&#39;STR&#39;) %&gt;% 
+  lm(formula = bp.z ~ Age + CtrPat, data = .)
+
+plot(dlpfc_test)</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/unnamed-chunk-43-1.png" width="4200" /><img src="TAC_analysis_anon_files/figure-html/unnamed-chunk-43-2.png" width="4200" /><img src="TAC_analysis_anon_files/figure-html/unnamed-chunk-43-3.png" width="4200" /><img src="TAC_analysis_anon_files/figure-html/unnamed-chunk-43-4.png" width="4200" /></p>
+<pre class="r"><code>summary(dlpfc_test)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = bp.z ~ Age + CtrPat, data = .)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -1.67546 -0.52983 -0.03418  0.43370  1.86929 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  2.32543    0.44865   5.183 1.17e-05 ***
+## Age         -0.06656    0.01429  -4.658 5.36e-05 ***
+## CtrPatpat   -0.57615    0.25087  -2.297   0.0283 *  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.7295 on 32 degrees of freedom
+## Multiple R-squared:  0.4991, Adjusted R-squared:  0.4678 
+## F-statistic: 15.94 on 2 and 32 DF,  p-value: 1.57e-05</code></pre>
+<pre class="r"><code>plot(str_test)</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/unnamed-chunk-43-5.png" width="4200" /><img src="TAC_analysis_anon_files/figure-html/unnamed-chunk-43-6.png" width="4200" /><img src="TAC_analysis_anon_files/figure-html/unnamed-chunk-43-7.png" width="4200" /><img src="TAC_analysis_anon_files/figure-html/unnamed-chunk-43-8.png" width="4200" /></p>
+<pre class="r"><code>summary(str_test)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = bp.z ~ Age + CtrPat, data = .)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -1.4867 -0.5337 -0.1826  0.5615  1.8578 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  2.01735    0.51410   3.924 0.000433 ***
+## Age         -0.06388    0.01637  -3.901 0.000462 ***
+## CtrPatpat   -0.13620    0.28746  -0.474 0.638862    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.8359 on 32 degrees of freedom
+## Multiple R-squared:  0.3423, Adjusted R-squared:  0.3012 
+## F-statistic: 8.328 on 2 and 32 DF,  p-value: 0.001225</code></pre>
+<p>Let’s plot the actual differences. First we need to derive the residuals from a model with age, and then plot them compared to one another.</p>
+<pre class="r"><code>getAgeRes &lt;- function(data) {
+  modelout &lt;- lm(bp.z ~ Age + CtrPat, data=data)
+  residuals &lt;- residuals_for(modelout, &quot;CtrPat&quot;)$residuals
+}
+
+bp_data_test &lt;- bp_data_test %&gt;% 
+  group_by(ROI) %&gt;% 
+  nest() %&gt;% 
+  mutate(bp_AgeRes.z = map(data, getAgeRes )) %&gt;% 
+  unnest() %&gt;% 
+  ungroup() %&gt;% 
+  mutate(CtrPat = ifelse(CtrPat==&#39;ctr&#39;, &#39;Control&#39;, &#39;Patient&#39;)) %&gt;% 
+  mutate(ROI = ifelse(ROI==&#39;STR&#39;, &#39;Striatum&#39;, &#39;DLPFC&#39;))</code></pre>
+<pre class="r"><code>groupcomp &lt;- ggplot(bp_data_test, aes(y=bp_AgeRes.z, x=CtrPat, colour=CtrPat, fill=CtrPat)) +
+  geom_violin(alpha=0.3) +
+  facet_grid(~ROI) +
+  stat_summary(fun.y = &quot;mean&quot;, size = 5, 
+               geom = &quot;point&quot;, shape=21, alpha=0.6, stroke=0.2) +
+  geom_point(position=position_dodge(width = .5)) +
+  labs(y=expression(paste(BP[ND], &quot; standardised residuals&quot;, sep = &quot;&quot;) ),
+       x=NULL) +
+  scale_colour_manual(&#39;&#39;, values = c(&quot;#85d4e3&quot;, &quot;#e39f85&quot;)) +
+  scale_fill_manual(&#39;&#39;, values = c(&quot;#85d4e3&quot;, &quot;#e39f85&quot;)) +
+  theme_light()
+
+groupcomp</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/violincomp-1.png" width="4200" /></p>
+<pre class="r"><code>ggsave(plot = groupcomp, &quot;Figures/groupcomp.jpg&quot;, width = 7, height = 5)</code></pre>
+<pre class="r"><code>dlpfc_test_bp &lt;- bp_data_test %&gt;% 
+  filter(ROI==&#39;DLPFC&#39;) %&gt;% 
+  lm(formula = bp ~ Age + CtrPat, data = .)
+
+str_test_bp &lt;- bp_data_test %&gt;% 
+  filter(ROI==&#39;Striatum&#39;) %&gt;% 
+  lm(formula = bp ~ Age + CtrPat, data = .)
+
+coefdf &lt;- rbind(coef(dlpfc_test_bp), coef(str_test_bp)) %&gt;% 
+  as.data.frame() %&gt;% 
+  rename(Intercept=&quot;(Intercept)&quot;)
+
+names(coefdf) &lt;- paste0(&quot;coef&quot;, names(coefdf))
+coefdf &lt;- mutate(coefdf, ROI = c(&quot;DLPFC&quot;, &quot;Striatum&quot;))
+
+bp_data_test_lines &lt;- left_join(bp_data_test, coefdf)</code></pre>
+<pre><code>## Joining, by = &quot;ROI&quot;</code></pre>
+<pre class="r"><code>groupcomp_bp &lt;- ggplot(bp_data_test_lines, aes(y=bp, x=Age)) +
+  geom_abline(aes(intercept = coefIntercept, slope=coefAge), colour=&quot;#85d4e3&quot;, size=1) +
+  geom_abline(aes(intercept = coefIntercept + coefCtrPatPatient, slope=coefAge), colour=&quot;#e39f85&quot;, size=1) +
+  geom_point(aes(colour=CtrPat)) +
+  # geom_smooth(method = &quot;lm&quot;) +
+  facet_grid(ROI~., scales=&quot;free&quot;) +
+  labs(y=expression(paste(BP[ND], sep = &quot;&quot;) ),
+       x=&quot;Age&quot;) +
+  theme_light() +
+  scale_colour_manual(&#39;&#39;, values = c(&quot;#85d4e3&quot;, &quot;#e39f85&quot;)) +
+  guides(colour=FALSE)
+
+
+groupcomp_bp</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/agepatcomp-1.png" width="4200" /></p>
+<pre class="r"><code>groupcomp_combined &lt;- cowplot::plot_grid(groupcomp_bp, groupcomp, ncol = 2, labels = &quot;AUTO&quot;, rel_widths = c(3,5))
+
+ggsave(groupcomp_combined, filename = &quot;Figures/groupcomp_combined.jpeg&quot;, width = 10, height = 5, dpi = 600)</code></pre>
+<p>And we need to check what the percentage change was.</p>
+<pre class="r"><code>dlpfc_testcent &lt;- bp_data_test %&gt;% 
+  filter(ROI==&#39;DLPFC&#39;) %&gt;% 
+  lm(formula = bp.cent ~ Age + CtrPat, data = .)
+
+mean_control_bp &lt;- bp_data_test %&gt;% 
+  filter(ROI==&quot;DLPFC&quot;,
+         CtrPat==&quot;Control&quot;) %&gt;% 
+  pull(bp) %&gt;% 
+  mean()
+
+(percdif &lt;- as.numeric(100*coef(dlpfc_testcent)[3] / mean_control_bp))</code></pre>
+<pre><code>## [1] -12.51676</code></pre>
+<p>In the DLPFC, the size of the change was -12.52%.</p>
+<div id="effect-size" class="section level4">
+<h4>Effect Size</h4>
+<pre class="r"><code># summary(dlpfc_test)$coefficients[3,3] * sqrt((17+18)/(17*18)) * sqrt(1-cor(dlpfc_test$model$bp.z, dlpfc_test$model$Age)^2)
+
+dlpfc_es &lt;- compute.es::a.tes(t = summary(dlpfc_test)$coefficients[3,3], 
+                  n.1 = 17, 
+                  n.2 = 18, 
+                  R = cor(dlpfc_test$model$bp.z, dlpfc_test$model$Age), 
+                  q = 1, 
+                  dig = 3)</code></pre>
+<pre><code>## Mean Differences ES: 
+##  
+##  d [ 95 %CI] = -0.593 [ -1.139 , -0.048 ] 
+##   var(d) = 0.072 
+##   p-value(d) = 0.034 
+##   U3(d) = 27.65 % 
+##   CLES(d) = 33.742 % 
+##   Cliff&#39;s Delta = -0.325 
+##  
+##  g [ 95 %CI] = -0.579 [ -1.112 , -0.046 ] 
+##   var(g) = 0.068 
+##   p-value(g) = 0.034 
+##   U3(g) = 28.12 % 
+##   CLES(g) = 34.105 % 
+##  
+##  Correlation ES: 
+##  
+##  r [ 95 %CI] = -0.284 [ -0.573 , 0.068 ] 
+##   var(r) = 0.014 
+##   p-value(r) = 0.108 
+##  
+##  z [ 95 %CI] = -0.292 [ -0.652 , 0.068 ] 
+##   var(z) = 0.031 
+##   p-value(z) = 0.108 
+##  
+##  Odds Ratio ES: 
+##  
+##  OR [ 95 %CI] = 0.341 [ 0.127 , 0.917 ] 
+##   p-value(OR) = 0.034 
+##  
+##  Log OR [ 95 %CI] = -1.076 [ -2.066 , -0.086 ] 
+##   var(lOR) = 0.236 
+##   p-value(Log OR) = 0.034 
+##  
+##  Other: 
+##  
+##  NNT = -8.042 
+##  Total N = 35</code></pre>
+<pre class="r"><code>str_es &lt;- compute.es::a.tes(t = summary(str_test)$coefficients[3,3], 
+                  n.1 = 17, 
+                  n.2 = 18, 
+                  R = cor(str_test$model$bp.z, str_test$model$Age), 
+                  q = 1, 
+                  dig = 3)</code></pre>
+<pre><code>## Mean Differences ES: 
+##  
+##  d [ 95 %CI] = -0.13 [ -0.692 , 0.431 ] 
+##   var(d) = 0.076 
+##   p-value(d) = 0.639 
+##   U3(d) = 44.812 % 
+##   CLES(d) = 46.327 % 
+##   Cliff&#39;s Delta = -0.073 
+##  
+##  g [ 95 %CI] = -0.127 [ -0.676 , 0.421 ] 
+##   var(g) = 0.072 
+##   p-value(g) = 0.639 
+##   U3(g) = 44.934 % 
+##   CLES(g) = 46.413 % 
+##  
+##  Correlation ES: 
+##  
+##  r [ 95 %CI] = -0.065 [ -0.401 , 0.287 ] 
+##   var(r) = 0.019 
+##   p-value(r) = 0.715 
+##  
+##  z [ 95 %CI] = -0.065 [ -0.425 , 0.295 ] 
+##   var(z) = 0.031 
+##   p-value(z) = 0.715 
+##  
+##  Odds Ratio ES: 
+##  
+##  OR [ 95 %CI] = 0.789 [ 0.285 , 2.186 ] 
+##   p-value(OR) = 0.639 
+##  
+##  Log OR [ 95 %CI] = -0.237 [ -1.255 , 0.782 ] 
+##   var(lOR) = 0.25 
+##   p-value(Log OR) = 0.639 
+##  
+##  Other: 
+##  
+##  NNT = -29.002 
+##  Total N = 35</code></pre>
+<p><strong>DLPFC</strong>: The Cohen’s D for this analysis is -0.593 [-1.139 - -0.048 95% CI]. The Hedge’s g for this analysis is -0.579 [-1.112 - -0.046 95% CI].</p>
+<p><strong>Striatum</strong>: The Cohen’s D for this analysis is -0.13 [-0.692 - 0.431 95% CI]. The Hedge’s g for this analysis is -0.127 [-0.676 - 0.421 95% CI].</p>
+</div>
+<div id="d-vs-3d-pet" class="section level4">
+<h4>2D vs 3D PET</h4>
+<p>We discussed before that a potential confounder is the presence of two 3D PET measurements. Let’s check whether this affects the results.</p>
+<pre class="r"><code>bp_data_test_2D3D &lt;- bp_data %&gt;% 
+  filter(PET2D3D == &#39;2D&#39;) %&gt;% 
+  group_by(ROI) %&gt;% 
+  mutate(bp.z = scale(bp, center=T, scale=F)) %&gt;% 
+  ungroup()
+
+dlpfc_test_2D3D &lt;- bp_data_test_2D3D %&gt;% 
+  filter(PET2D3D == &#39;2D&#39;) %&gt;% 
+  filter(ROI==&#39;DLPFC&#39;) %&gt;% 
+  lm(formula = bp.z ~ Age + CtrPat, data = .)
+
+str_test_2D3D &lt;- bp_data_test_2D3D %&gt;% 
+  filter(ROI==&#39;STR&#39;) %&gt;% 
+  lm(formula = bp.z ~ Age + CtrPat, data = .)
+
+
+summary(dlpfc_test_2D3D)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = bp.z ~ Age + CtrPat, data = .)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.12305 -0.03626 -0.00217  0.03070  0.13571 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  0.172929   0.033494   5.163 1.47e-05 ***
+## Age         -0.005054   0.001069  -4.726 5.04e-05 ***
+## CtrPatpat   -0.042523   0.018938  -2.245   0.0323 *  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.05376 on 30 degrees of freedom
+## Multiple R-squared:  0.5102, Adjusted R-squared:  0.4776 
+## F-statistic: 15.63 on 2 and 30 DF,  p-value: 2.237e-05</code></pre>
+<pre class="r"><code>summary(str_test_2D3D)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = bp.z ~ Age + CtrPat, data = .)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.33715 -0.13077 -0.03815  0.13559  0.42329 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  0.460263   0.120964   3.805 0.000651 ***
+## Age         -0.014750   0.003862  -3.819 0.000626 ***
+## CtrPatpat   -0.032510   0.068396  -0.475 0.638001    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.1942 on 30 degrees of freedom
+## Multiple R-squared:  0.3437, Adjusted R-squared:  0.2999 
+## F-statistic: 7.854 on 2 and 30 DF,  p-value: 0.001807</code></pre>
+<pre class="r"><code>dlpfc_es_2D3D &lt;- compute.es::a.tes(t = summary(dlpfc_test_2D3D)$coefficients[3,3], 
+                  n.1 = 17, 
+                  n.2 = 16, 
+                  R = cor(dlpfc_test$model$bp.z, dlpfc_test$model$Age), 
+                  q = 1, 
+                  dig = 3)</code></pre>
+<pre><code>## Mean Differences ES: 
+##  
+##  d [ 95 %CI] = -0.597 [ -1.161 , -0.034 ] 
+##   var(d) = 0.076 
+##   p-value(d) = 0.039 
+##   U3(d) = 27.512 % 
+##   CLES(d) = 33.636 % 
+##   Cliff&#39;s Delta = -0.327 
+##  
+##  g [ 95 %CI] = -0.582 [ -1.132 , -0.033 ] 
+##   var(g) = 0.072 
+##   p-value(g) = 0.039 
+##   U3(g) = 28.017 % 
+##   CLES(g) = 34.025 % 
+##  
+##  Correlation ES: 
+##  
+##  r [ 95 %CI] = -0.286 [ -0.583 , 0.078 ] 
+##   var(r) = 0.015 
+##   p-value(r) = 0.117 
+##  
+##  z [ 95 %CI] = -0.294 [ -0.667 , 0.079 ] 
+##   var(z) = 0.033 
+##   p-value(z) = 0.117 
+##  
+##  Odds Ratio ES: 
+##  
+##  OR [ 95 %CI] = 0.338 [ 0.122 , 0.941 ] 
+##   p-value(OR) = 0.039 
+##  
+##  Log OR [ 95 %CI] = -1.084 [ -2.106 , -0.061 ] 
+##   var(lOR) = 0.251 
+##   p-value(Log OR) = 0.039 
+##  
+##  Other: 
+##  
+##  NNT = -8.005 
+##  Total N = 33</code></pre>
+<pre class="r"><code>str_es_2D3D &lt;- compute.es::a.tes(t = summary(str_test_2D3D)$coefficients[3,3], 
+                  n.1 = 17, 
+                  n.2 = 16, 
+                  R = cor(str_test$model$bp.z, str_test$model$Age), 
+                  q = 1, 
+                  dig = 3)</code></pre>
+<pre><code>## Mean Differences ES: 
+##  
+##  d [ 95 %CI] = -0.135 [ -0.715 , 0.445 ] 
+##   var(d) = 0.081 
+##   p-value(d) = 0.639 
+##   U3(d) = 44.641 % 
+##   CLES(d) = 46.205 % 
+##   Cliff&#39;s Delta = -0.076 
+##  
+##  g [ 95 %CI] = -0.131 [ -0.697 , 0.434 ] 
+##   var(g) = 0.077 
+##   p-value(g) = 0.639 
+##   U3(g) = 44.775 % 
+##   CLES(g) = 46.3 % 
+##  
+##  Correlation ES: 
+##  
+##  r [ 95 %CI] = -0.067 [ -0.414 , 0.296 ] 
+##   var(r) = 0.02 
+##   p-value(r) = 0.715 
+##  
+##  z [ 95 %CI] = -0.067 [ -0.44 , 0.306 ] 
+##   var(z) = 0.033 
+##   p-value(z) = 0.715 
+##  
+##  Odds Ratio ES: 
+##  
+##  OR [ 95 %CI] = 0.783 [ 0.274 , 2.242 ] 
+##   p-value(OR) = 0.639 
+##  
+##  Log OR [ 95 %CI] = -0.244 [ -1.296 , 0.807 ] 
+##   var(lOR) = 0.265 
+##   p-value(Log OR) = 0.639 
+##  
+##  Other: 
+##  
+##  NNT = -28.124 
+##  Total N = 33</code></pre>
+</div>
+<div id="gender" class="section level4">
+<h4>Gender</h4>
+<p>We also observed what appeared to be differences in BP<sub>ND</sub> by gender, which is unlikely given the remainder of the literature using this tracer. As a check, I will also plot the figure with a separation by gender.</p>
+<pre class="r"><code>bp_data_test %&gt;% 
+  mutate(Sex = ifelse(Sex==&#39;f&#39;, &#39;Female&#39;, &#39;Male&#39;)) %&gt;% 
+  ggplot(aes(y=bp_AgeRes.z, x=Sex, colour=CtrPat, fill=CtrPat)) +
+  geom_split_violin(alpha=0.3) +
+  facet_grid(~ROI) +
+  stat_summary(fun.y = &quot;mean&quot;, size = 5, 
+               geom = &quot;point&quot;, shape=21, alpha=0.6, stroke=0.2,
+               position=position_dodge(width = .25)) +
+  geom_point(position=position_dodge(width = .25)) +
+  labs(y=expression(paste(BP[ND], &quot; standardised residuals&quot;, sep = &quot;&quot;) ),
+       x=NULL) +
+  scale_colour_manual(values = c(&quot;#85d4e3&quot;, &quot;#e39f85&quot;)) +
+  scale_fill_manual(values = c(&quot;#85d4e3&quot;, &quot;#e39f85&quot;)) +
+  theme_light()</code></pre>
+<p><img src="TAC_analysis_anon_files/figure-html/test_sex-1.png" width="4200" /></p>
+<p>We can see that the trend is in the same direction in both men and women. I think it is therefore fair to conclude that the effect of sex is not a large influence on the results, since sex effects have not been shown in other studies of [11C]SCH23390, and they appear to approximately replicate the results in males, but the sample is not sufficiently large to be sure.</p>
+</div>
+</div>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
